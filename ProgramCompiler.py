@@ -1,12 +1,12 @@
 import discord
 from discord.ext import commands
+import os
 
 import compiler
 
 client = commands.Bot(command_prefix = "pc!")
 
-# SUBMIT_CHANNEL = 701417692711878678
-SUBMIT_CHANNEL = 701830495629213738
+SUBMIT_CHANNEL = [701830495629213738] # id of code submition channels
 
 @client.event
 async def on_ready():
@@ -19,23 +19,24 @@ async def on_ready():
 @client.event
 async def on_message(message):
     if message.author.id == client.user.id: return
-    if message.channel.id != SUBMIT_CHANNEL: return
+    if message.channel.id not in SUBMIT_CHANNEL: return
     if len(message.attachments) == 0: return
 
     file = message.attachments[0]
     filename = file.filename
     extension = '.'+filename.split('.')[-1] if len(filename.split('.')) > 1 else ''
     if extension == '': return
-
+    try: os.mkdir(f"{message.channel.name}/{message.author.id}")
+    except FileExistsError: pass
     print(f"'{filename}' by {message.author.name}#{message.author.discriminator} in {message.channel.name}")
-    newFile = f"{message.channel.name}_{message.author.id}{extension}"
-    await file.save(newFile)
-    print(f"file {filename} saved to {newFile}")
+    path = f"{message.channel.name}/{message.author.id}"
+    await file.save(f"{path}/{filename}")
+    print(f"file '{filename}' saved to '{path}/{filename}'")
 
     msg = await message.channel.send("Téléchargement du programme...")
 
-    compiler.compute(newFile, extension, msg)
+    await compiler.compute(path, filename, extension, msg)
     
 
 
-client.run("NzAxNDEwMjk1MzE0MzgyODc4.Xp1VgQ.F1NtuWKWubKVrBL2eqjpujF9qww")
+client.run("TOKEN")

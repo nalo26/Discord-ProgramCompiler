@@ -1,26 +1,54 @@
-import discord
-from discord.ext import commands
 from subprocess import run, PIPE
 import shlex
+import os
 
-async def compute(file, extension, msg):
+async def compute(pathFile, filename, extension, msg):
     bashCommand = ''
-    if extension == '.py': bashCommand = f"python3 -S {file}"
-    if extension == '.java': bashCommand = f"java {file}"
-    if extension == '.c': bashCommand = f"gcc {file} -o {file[:-2]} -std=c11 -O2 -lm"
+    if extension == '.zip':
+        bashCommand = f"unzip -o {filename} -d {filename[:-4]}" # -o Overwrite / -d Destination
+        run(bashCommand, check=False, stdout=PIPE, cwd=pathFile, shell=True)
+        print(f"Succesfully extracted {filename}")
+        filename = filename[:-4]
+        file = checkFile(f"{pathFile}/{filename}", "Main")
+        if file is None:
+            await msg.edit(content=f":x: **Le fichier `Main` n'a pas été trouvé !**")
+            return
+        pathFile += '/'+filename
+        extension = '.'+file.split('.')[-1]
+        filename = 'Main' + extension        
+
+    if extension == '.py': bashCommand = f"python3 -S {filename}"
+    if extension == '.java':
+        bashCommand = "javac *.java"
+        p = run(bashCommand, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
+        if p.stderr != "":
+            await msg.edit(content=f":x: **Erreur de compilation !** ```{p.stderr}```")
+            return
+        bashCommand = "java Main"
+
+    if extension == '.c':
+        try: os.remove(f"{pathFile}/{filename[:-2]}")
+        except FileNotFoundError: pass
+
+        bashCommand = f"gcc {filename} -o {filename[:-2]} -std=c11 -O2 -lm"
+        p = run(bashCommand, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
+        
+        newFile = checkFile(pathFile, filename[:-2])
+        if newFile is None:
+            await msg.edit(content=f":x: **Erreur de compilation !** ```{p.stderr}```")
+            return
+        filename = filename[:-2]
+        bashCommand = f"./{filename}"
 
     if bashCommand == '': return
 
     testAmount = int(open(f"{msg.channel.name}/data.txt", "r").read())
-    await msg.edit("Exécution du programme en cours...")
-    for i in range(1, testAmount+1):
-        inp = open(f"{msg.channel.name}/in_{i}.txt", "r").read()
+    await msg.edit(content=":clock1: Exécution du programme en cours...")
 
-        if extension == '.c': # compiled THEN execute
-            run(shlex.split(f"{bashCommand}"), check=False)
-            process = run(shlex.split(f"./{file[:-2]}"), input=inp, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8")
-        else:
-            process = run(shlex.split(f"{bashCommand}"), input=inp, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8")
+    for i in range(1, testAmount+1):
+
+        inp = open(f"{msg.channel.name}/in_{i}.txt", "r").read()
+        process = run(bashCommand, input=inp, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
         output = process.stdout
         error  = process.stderr
         if output == '': output = ' '
@@ -37,3 +65,8 @@ async def compute(file, extension, msg):
             
         await msg.edit(content=f"{msg.content}\n`{i}/{testAmount}` :white_check_mark: **Test passé !**")
     
+
+def checkFile(pathFile, name):
+    for file in os.listdir(pathFile):
+        if file.split('.')[0] == name: return file
+    return None
