@@ -33,10 +33,12 @@ async def on_message(message):
     await file.save(f"{path}/{filename}")
     print(f"file '{filename}' saved to '{path}/{filename}'")
 
-    msg = await message.channel.send("Téléchargement du programme...")
-
-    await compiler.compute(path, filename, extension, msg)
+    author = message.author.id
     
-
+    await message.delete()
+    msg = await client.get_user(author).send(f"Téléchargement du programme {filename}...")
+    
+    await compiler.compute(path, filename, extension, msg, author)
+    
 
 client.run("TOKEN")

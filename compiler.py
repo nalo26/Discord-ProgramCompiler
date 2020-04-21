@@ -1,8 +1,14 @@
 from subprocess import run, PIPE
-import shlex
 import os
 
-async def compute(pathFile, filename, extension, msg):
+language = {'.py': 'Python', '.java': 'Java', '.c': 'C'}
+
+async def compute(pathFile, filename, extension, msg, author):
+
+    if not os.path.isdir(filename.split('.')[:-1]):
+        await msg.edit(content=f":x: **Aucun exercice du nom de `{filename.split('.')[:-1]}` n'existe !**")
+        return
+
     bashCommand = ''
     if extension == '.zip':
         bashCommand = f"unzip -o {filename} -d {filename[:-4]}" # -o Overwrite / -d Destination
@@ -11,7 +17,7 @@ async def compute(pathFile, filename, extension, msg):
         filename = filename[:-4]
         file = checkFile(f"{pathFile}/{filename}", "Main")
         if file is None:
-            await msg.edit(content=f":x: **Le fichier `Main` n'a pas été trouvé !**")
+            await msg.edit(content=f"[`{filename}.zip`]\n:x: **Le fichier `Main` n'a pas été trouvé !**")
             return
         pathFile += '/'+filename
         extension = '.'+file.split('.')[-1]
@@ -22,7 +28,7 @@ async def compute(pathFile, filename, extension, msg):
         bashCommand = "javac *.java"
         p = run(bashCommand, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
         if p.stderr != "":
-            await msg.edit(content=f":x: **Erreur de compilation !** ```{p.stderr}```")
+            await msg.edit(content=f"`{filename}` [{language[extension]}]\n:x: **Erreur de compilation !** ```{p.stderr}```")
             return
         bashCommand = "java Main"
 
@@ -35,7 +41,7 @@ async def compute(pathFile, filename, extension, msg):
         
         newFile = checkFile(pathFile, filename[:-2])
         if newFile is None:
-            await msg.edit(content=f":x: **Erreur de compilation !** ```{p.stderr}```")
+            await msg.edit(content=f"`{filename}` [{language[extension]}]\n:x: **Erreur de compilation !** ```{p.stderr}```")
             return
         filename = filename[:-2]
         bashCommand = f"./{filename}"
@@ -43,7 +49,7 @@ async def compute(pathFile, filename, extension, msg):
     if bashCommand == '': return
 
     testAmount = int(open(f"{msg.channel.name}/data.txt", "r").read())
-    await msg.edit(content=":clock1: Exécution du programme en cours...")
+    await msg.edit(content=f"`{filename}` [{language[extension]}]\n:clock1: Exécution du programme en cours...")
 
     for i in range(1, testAmount+1):
 
@@ -61,7 +67,7 @@ async def compute(pathFile, filename, extension, msg):
 
         if output != neededOut: # not good output
             await msg.edit(content=f"{msg.content}\n`{i}/{testAmount}` :x: **Test échoué : votre programme s'est exécuté correctement, mais :**\nSortie standard attendue :```{neededOut[:-1]}```\nSortie standard du programme :```{output}```")
-            break    
+            break
             
         await msg.edit(content=f"{msg.content}\n`{i}/{testAmount}` :white_check_mark: **Test passé !**")
     
