@@ -2,58 +2,39 @@ import json
 from datetime import datetime
 import pytz
 
-def create_user(dec, user):
-    u_create = {'id': user, 'score': 0, 'submit': []}
-    dec.append(u_create)
-    write(dec)
+def create_user(dec, name, user):
+    u_create = {'name': name, 'date': get_time(), 'score': 0, 'submit': {}}
+    dec[user] = u_create
+    write("users.json", dec)
     return u_create
 
-def add_submition(user_id, exer, lang, tests, complete, score):
-    dec = read()
-    user = get_user(dec, user_id)
-    if user == -1: user = create_user(dec, user_id)
-    test = get_test(user, exer.lower())
-    if test == -1:
-        test = {'exercice': exer.lower(), 'language': lang, 'date': get_time(), 'complete_test': tests, 'complete': complete, 'score': score}
-        user['submit'].append(test)
-        user['score'] += score
-        write(dec)
-        return True, test
-    if score <= test['score']: return False, test
-    # test['exercice'] = exer
-    test['language'] = lang
+def add_submition(user_id, user_name, exer, lang, tests, complete, score):
+    dec = read("users.json")
+    try: user = dec[str(user_id)]
+    except KeyError: user = create_user(dec, user_name, user_id)
+    try: 
+        test = user['submit'][exer]
+        if score <= test['score']: return False, test
+    except KeyError: test = {}
     test['date'] = get_time()
-    test['complete_test'] = tests
+    test['language'] = lang
+    test['tests'] = tests
     test['complete'] = complete
-    user['score'] -= test['score']
-    user['score'] += score
     test['score'] = score
-    write(dec)
+
+    user['submit'][exer] = test
+    user['score'] += score
+    write("users.json", dec)
     return True, test
-    
-def get_test(user, exer_name):
-    for ex in user['submit']:
-        if ex['exercice'] == exer_name: return ex
-    return -1
 
-def get_user(dec, u_id):
-    for user in dec:
-        if user['id'] == u_id: return user
-    return -1
-
-def get_exo(user, ex_id):
-    for exer in user['submit']:
-        if exer['id'] == ex_id: return exer
-    return -1
-
-def read():
-    with open('users.json', 'r') as mf:
+def read(path):
+    with open(path, 'r') as mf:
         dec = json.load(mf)
     mf.close()
     return dec
 
-def write(data):
-    with open('users.json', 'w') as mf:
+def write(path, data):
+    with open(path, 'w') as mf:
         json.dump(data, mf, indent=4)
     mf.close()
 

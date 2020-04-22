@@ -1,12 +1,13 @@
 from subprocess import run, PIPE
 import os
-import json
 
 import database
 
 language = {'.py': 'Python', '.java': 'Java', '.class': 'Java', '.c': 'C'}
 
-async def compute(pathFile, filename, extension, exercice, msg, author):
+async def compute(pathFile, filename, extension, exer_name, msg, author, username):
+
+    exercice = database.read("exercices.json")[exer_name]
 
     bashCommand = ''
     if extension == '.zip':
@@ -27,7 +28,7 @@ async def compute(pathFile, filename, extension, exercice, msg, author):
         bashCommand = "javac *.java"
         p = run(bashCommand, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
         if p.stderr != "":
-            await msg.edit(content=f"`{filename}` [{language[extension]}]\n:x: **Erreur de compilation !** ```{p.stderr}```")
+            await msg.edit(content=f"`{exer_name}` ({exercice['difficulty']}:star:) [{language[extension]}]\n:x: **Erreur de compilation !** ```{p.stderr}```")
             return
         bashCommand = f"java {filename[:-5]}"
 
@@ -40,32 +41,33 @@ async def compute(pathFile, filename, extension, exercice, msg, author):
         
         newFile = checkFile(pathFile, filename[:-2])
         if newFile is None:
-            await msg.edit(content=f"`{filename}` [{language[extension]}]\n:x: **Erreur de compilation !** ```{p.stderr}```")
+            await msg.edit(content=f"`{exer_name}` ({exercice['difficulty']}:star:) [{language[extension]}]\n:x: **Erreur de compilation !** ```{p.stderr}```")
             return
         filename = filename[:-2]
         bashCommand = f"./{filename}_c"
 
     if bashCommand == '': return
 
-    with open(f"{exercice}/data.json", "r") as mf:
-        dec = json.load(mf)
-    mf.close()
-    testAmount = dec['test_amount']
-    difficulty = dec['difficulty']
+    dec = database.read("exercices.json")
+    ex_data = dec[exer_name]
+    testAmount = ex_data['test_amount']
+    difficulty = ex_data['difficulty']
+    ex_data['executed_test'] += 1
+    database.write("exercices.json", dec)
     
     print(f"Running {filename}..", end='')
-    await msg.edit(content=f"`{filename}` [{language[extension]}]\n:clock1: Exécution du programme en cours...")
+    await msg.edit(content=f"`{exer_name}` ({exercice['difficulty']}:star:) [{language[extension]}]\n:clock1: Exécution du programme en cours...")
 
     exercice_done = 0
     for i in range(1, testAmount+1):
 
-        inp = open(f"{exercice}/in_{i}.txt", "r").read()
+        inp = open(f"{exer_name}/in_{i}.txt", "r").read()
         process = run(bashCommand, input=inp, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
         output = process.stdout
         error  = process.stderr
         if output == '': output = ' '
 
-        neededOut = open(f"{exercice}/out_{i}.txt", "r").read()
+        neededOut = open(f"{exer_name}/out_{i}.txt", "r").read()
         
         if error != '': # on error
             await msg.edit(content=f"{msg.content}\n`{i}/{testAmount}` :x: **Test échoué : votre programme a rencontré une erreur.**\nSortie standard attendue :```{neededOut[:-1]}```\nSortie standard du programme :```{output}```\nSortie d'erreur du programme :```{error}```")
@@ -83,7 +85,7 @@ async def compute(pathFile, filename, extension, exercice, msg, author):
     await msg.edit(content=f"{msg.content}\n\n:trophy: Bravo, tu as réussi cet exercice !")
     print('. Done!')
 
-    is_top, submition = database.add_submition(author, exercice, language[extension], exercice_done, exercice_done==testAmount, exercice_done*difficulty)
+    is_top, submition = database.add_submition(author, username, exer_name, language[extension], exercice_done, exercice_done==testAmount, exercice_done*difficulty)
     if is_top: await msg.edit(content=f"{msg.content}\nC'est ton meilleur score, tu gagnes {exercice_done*difficulty} point(s) !")
     else: await msg.edit(content=f"{msg.content}\nTu as déjà réussi cet exercice le `{submition['date'].split(' ')[0]}` en `{submition['language']}` !")
     
