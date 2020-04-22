@@ -45,4 +45,4 @@ async def on_message(message):
     await compute(path, filename, extension, exercice, msg, author)
     
 
-client.run("NzAxNDEwMjk1MzE0MzgyODc4.Xp6gMg.pugzaUO-z1fCQDKm3CIMQkGg71M")
+client.run("TOKEN")
