@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import os
 
-import compiler
+from compiler import compute
 
 client = commands.Bot(command_prefix = "pc!")
 
@@ -34,14 +34,15 @@ async def on_message(message):
 
     try: os.mkdir(f"{exercice}/{author}")
     except FileExistsError: pass
+    print("=====================================================================")
     print(f"'{filename}' by {message.author.name}#{message.author.discriminator}")
     path = f"{exercice}/{author}"
     await file.save(f"{path}/{filename}")
-    print(f"file '{filename}' saved to '{path}/{filename}'")
+    print(f"File '{filename}' saved to '{path}/{filename}'")
 
     msg = await client.get_user(author).send(f"Téléchargement du programme {filename}...")
     
-    await compiler.compute(path, filename, extension, exercice, msg, author)
+    await compute(path, filename, extension, exercice, msg, author)
     
 
-client.run("TOKEN")
+client.run("NzAxNDEwMjk1MzE0MzgyODc4.Xp6gMg.pugzaUO-z1fCQDKm3CIMQkGg71M")
