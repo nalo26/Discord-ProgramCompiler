@@ -10,6 +10,7 @@ from shutil import rmtree
 client = commands.Bot(command_prefix = "!")
 
 ADMIN = [250989853158801419, 520334699046895617]
+GUILD_ID = 0 # Your guild_id here
 
 @client.event
 async def on_ready():
@@ -186,7 +187,7 @@ async def on_message(message):
 
     msg = await client.get_user(author).send(f"Téléchargement du programme {filename}...")
     
-    try: username = client.get_guild(688355824934060032).get_member(author).nick
+    try: username = client.get_guild(GUILD_ID).get_member(author).nick
     except Exception: username = client.get_user(author).display_name
     await compute(path, filename, extension, exercice, msg, author, username)
 
@@ -271,4 +272,4 @@ def show_user(u_disc, user):
     return embed
 
 
-client.run("NzAxNDEwMjk1MzE0MzgyODc4.XqAF_A.c2wa8C88DpD1Wi3WWIfn_oiR1ac")
+client.run("TOKEN")
