@@ -83,7 +83,7 @@ You must provide a correct exercise title to edit this test.
 
 Aliases : `!delete`, `!del`
 
-Example: `!remove MySuperExercise`
+Example: `!remove Addition`
 
 #### Add a test entry to an existing exercise
 
