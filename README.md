@@ -20,9 +20,7 @@ ExerciseName.zip
 
 Once the test is submitted, it will be run and tested with the tests of the exercices. You will be warned of error(s) there are any.
 
-## Commands
-
-### Users Commands
+## Users Commands
 
 #### List all available tests/exercises
 
@@ -49,8 +47,7 @@ Send the leaderboard of all participants, ordered by total score.
 Aliases: `!classement`, `!top`
 
 
-
-### Admin Commands
+## Admin Commands
 
 They work like shell commands, with arguments like `-a "This an argument"`.
 
