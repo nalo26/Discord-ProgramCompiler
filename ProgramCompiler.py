@@ -116,7 +116,7 @@ async def add(ctx, *argv):
 # ================= #
 # | USER COMMANDS | #
 # ================= #
-@client.command(aliases=["exercice", "exercices", "exercise", "exercises", "list", "liste", "listes", "detail"])
+@client.command(aliases=["exercices", "exercise", "exercises", "list", "liste", "listes", "detail"])
 async def exercice(ctx, name=""):
     dec = database.read("exercices.json")
     if name == "": # loop all exercice
