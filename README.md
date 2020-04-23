@@ -24,11 +24,20 @@ Once the test is submitted, it will be run and tested with the tests of the exer
 
 #### List all available tests/exercises
 
-`!list`
+`!list [language]`
 
-Send a list of all available exercises.
+If `language` specified, send list of all exercice of this language.
+If not, send list of all available exercises in any language.
 
-Aliases: `!liste`, `!listes`, `!exercice`, `!exercices`, `!exercise` , `!exercises`
+Aliases: `!liste`, `!listes`
+
+#### See details of a test/exercise
+
+`!detail <title>`
+
+Send details of a specific exercise.
+
+Aliases: `!exercice`, `!exercise`, `details`
 
 #### See your profile
 
@@ -40,9 +49,10 @@ Aliases: `!profil`, `!me`
 
 #### Leaderboard
 
-`!leaderboard`
+`!leaderboard [language]`
 
-Send the leaderboard of all participants, ordered by total score.
+If `language` specified, send the leaderboard for all exercises of this language.
+If not, send general leaderboard.
 
 Aliases: `!classement`, `!top`
 
@@ -53,16 +63,17 @@ They work like shell commands, with arguments like `-a "This an argument"`.
 
 #### Create a new test/exercise
 
-`!create -t <title> [-D -i -o -d -h]`
+`!create -t <title> [-D -i -o -d -h -l]`
 
-|    Argument    |                  Description                    |Default|
-| -------------- | ----------------------------------------------- | ----- |
-|-t --title      |**Needed** The title of the exercice             |       |
-|-D --description|The description of the exercice                  |*Empty*|
-|-i --input      |Description of the input sending by the exercice |*Empty*|
-|-o --output     |Description of the needed output of the exercice |*Empty*|
-|-d --difficulty |The difficulty of the exercice (between 1 and 10)|   1   |
-|-h --hidden     |If the needed output of a test is hide when error| false |
+|    Argument    |                      Description                      |Default|
+| -------------- | ----------------------------------------------------- | ----- |
+|-t --title      |**Needed** The title of the exercice                   |       |
+|-D --description|The description of the exercice                        |*Empty*|
+|-i --input      |Description of the input sending by the exercice       |*Empty*|
+|-o --output     |Description of the needed output of the exercice       |*Empty*|
+|-d --difficulty |The difficulty of the exercice (between 1 and 10)      |   1   |
+|-h --hidden     |If the needed output of a test is hide when error      | false |
+|-l --language   |Indicate the language of the exercice (Python, Java, C)|  all  |
 
 Aliases : `!createTest`, `!createExercise`
 
@@ -70,7 +81,7 @@ Example : `!create -t Addition -D "Calculate the addition of two number" -i "Two
 
 #### Edit an existing test/exercise
 
-`!edit -t <title> [-D -i -o -d -h]`
+`!edit -t <title> [-D -i -o -d -h -l]`
 
 See *Create a new test/exercise* for argument list.
 You must provide a correct exercise title to edit this test.
