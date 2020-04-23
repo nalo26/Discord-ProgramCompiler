@@ -3,7 +3,7 @@ from datetime import datetime
 import pytz
 
 def create_user(dec, name, user):
-    u_create = {'name': name, 'date': get_time(), 'score': 0, 'submit': {}}
+    u_create = {'name': name, 'date': get_time(), 'score': {'general': 0}, 'submit': {}}
     dec[user] = u_create
     write("users.json", dec)
     return u_create
@@ -23,7 +23,9 @@ def add_submition(user_id, user_name, exer, lang, tests, complete, score):
     test['score'] = score
 
     user['submit'][exer] = test
-    user['score'] += score
+    user['score']['general'] += score
+    try: user['score'][lang.lower()] += score
+    except KeyError: user['score'][lang.lower()] = score
     write("users.json", dec)
     return True, test
 

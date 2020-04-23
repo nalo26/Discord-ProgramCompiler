@@ -4,10 +4,19 @@ import os
 import database
 
 language = {'.py': 'Python', '.java': 'Java', '.class': 'Java', '.c': 'C'}
+listLang = ["python", "java", "c"]
 
 async def compute(pathFile, filename, extension, exer_name, msg, author, username):
 
     exercice = database.read("exercices.json")[exer_name]
+
+    try: lang = language[extension]
+    except KeyError:
+        await msg.edit(content=f":x: **`{extension}` n'est pas une extension valide !**")
+        return
+    if exercice['language'] != "all" and lang.lower() != exercice['language']:
+        await msg.edit(content=f":x: **Cet exercice est seulement disponible en `{exercice['language'].capitalize()}` !**")
+        return
 
     bashCommand = ''
     if extension == '.zip':
@@ -45,8 +54,6 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
             return
         filename = filename[:-2]
         bashCommand = f"./{filename}_c"
-
-    if bashCommand == '': return
 
     dec = database.read("exercices.json")
     ex_data = dec[exer_name]

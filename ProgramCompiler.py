@@ -10,6 +10,7 @@ from shutil import rmtree
 client = commands.Bot(command_prefix = "!")
 
 ADMIN = [250989853158801419, 520334699046895617]
+listLang = ["python", "java", "c"]
 
 @client.event
 async def on_ready():
@@ -32,6 +33,7 @@ async def create(ctx, *argv):
     output = ""
     difficulty = 1
     hidden = False
+    language = "all"
     for i, arg in enumerate(argv):
         if len(argv)-1 >= i+1 and '-' not in argv[i+1]:
             if arg in ['-t', '--title']: title = argv[i+1]
@@ -40,11 +42,15 @@ async def create(ctx, *argv):
             if arg in ['-o', '--output']: output = argv[i+1]
             if arg in ['-d', '--difficulty']: difficulty = int(argv[i+1])
             if arg in ['-h', '--hidden']: hidden = bool(argv[i+1].lower() == 'true')
+            if arg in ['-l', '--language']: language = argv[i+1]
 
+    if language != "all" and language.lower() not in listLang:
+        await ctx.send(f":x: **Le langage `{language}` n'est pas (encore) supporté !**")
+        return
     try:
         database.read("exercices.json")[title]
         await ctx.send(f":x: **Un défi du nom de `{title}` existe déjà ! **")
-    except KeyError: await ctx.send(embed=create_ex(title, difficulty, description, inputs, output, hidden))
+    except KeyError: await ctx.send(embed=create_ex(title, difficulty, description, inputs, output, hidden, language.lower()))
 
 @client.command()
 async def edit(ctx, *argv):
@@ -56,6 +62,7 @@ async def edit(ctx, *argv):
     output = ""
     difficulty = -1
     hidden = None
+    language = "all"
     for i, arg in enumerate(argv):
         if len(argv)-1 >= i+1 and '-' not in argv[i+1]:
             if arg in ['-t', '--title']: title = argv[i+1]
@@ -64,10 +71,14 @@ async def edit(ctx, *argv):
             if arg in ['-o', '--output']: output = argv[i+1]
             if arg in ['-d', '--difficulty']: difficulty = int(argv[i+1])
             if arg in ['-h', '--hidden']: hidden = bool(argv[i+1].lower() == 'true')
+            if arg in ['-l', '--language']: language = argv[i+1]
 
+    if language != "all" and language.lower() not in listLang:
+        await ctx.send(f":x: **Le langage `{language}` n'est pas (encore) supporté !**")
+        return
     try:
         database.read("exercices.json")[title]
-        await ctx.send(embed=edit_ex(title, difficulty, description, inputs, output, hidden))
+        await ctx.send(embed=edit_ex(title, difficulty, description, inputs, output, hidden, language.lower()))
     except KeyError: await ctx.send(f":x: **Aucun exercice du nom de `{title}` n'a été trouvé !**")
 
 @client.command(aliases=['del', 'delete'])
@@ -116,38 +127,53 @@ async def add(ctx, *argv):
 # ================= #
 # | USER COMMANDS | #
 # ================= #
-@client.command(aliases=["exercices", "exercise", "exercises", "list", "liste", "listes", "detail"])
-async def exercice(ctx, name=""):
+@client.command(aliases=["list", "listes"])
+async def liste(ctx, lang="all"):
+    if lang != "all" and lang.lower() not in listLang:
+        await ctx.send(f":x: **Le langage `{lang}` n'est pas (encore) supporté !**")
+        return
+    await ctx.send(embed=show_all_ex(lang.lower()))
+
+@client.command(aliases=["exercice", "exercise", "details"])
+async def detail(ctx, title=""):
     dec = database.read("exercices.json")
-    if name == "": # loop all exercice
-        await ctx.send(embed=show_all_ex())
-    else: # specific exercice
-        try: ex = dec[name]
-        except KeyError:
-            await ctx.send(f":x: **Aucun exercice du nom de `{name}` n'a été trouvé !**")
-            return
-        await ctx.send(embed=show_ex(name, ex))
+    try: ex = dec[title]
+    except KeyError:
+        await ctx.send(f":x: **Aucun exercice du nom de `{title}` n'a été trouvé !**")
+        return
+    await ctx.send(embed=show_ex(title, ex))
 
 @client.command(aliases=['profil', 'me'])
 async def profile(ctx):
     dec = database.read("users.json")
     u_disc = ctx.message.author
     try: user = dec[str(u_disc.id)]
-    except KeyError: user = database.create_user(dec, u_disc.id)
+    except KeyError:
+        try: username = client.get_guild(688355824934060032).get_member(u_disc.id).nick
+        except Exception: username = client.get_user(u_disc.id).display_name
+        user = database.create_user(dec, username, u_disc.id)
     await ctx.send(embed=show_user(u_disc, user))
 
 @client.command(aliases=['classement', 'top'])
-async def leaderboard(ctx):
+async def leaderboard(ctx, lang="all"):
+    if lang != "all" and lang.lower() not in listLang:
+        await ctx.send(f":x: **Le langage `{lang}` n'est pas (encore) supporté !**")
+        return
     dec = database.read("users.json")
     res = {}
     for u in dec.values():
-        res[u['name']] = u['score']
+        if lang.lower() == "all": res[u['name']] = u['score']['general']
+        else:
+            try: res[u['name']] = u['score'][lang.lower()]
+            except KeyError: pass
     res = sorted(res.items(), key = lambda kv:(kv[1], kv[0]))
     
-    embed = discord.Embed(title=":trophy: Classement général")
+    if lang.lower() == "all": embed = discord.Embed(title=":trophy: Classement général")
+    else: embed = discord.Embed(title=f":trophy: Classement général {lang.capitalize()}")
     desc = ""
     for i, (name, score) in enumerate(res):
         desc += f"{i+1} : {name} ({score}pts)\n"
+    if desc == "": desc = "*Aucune participation n'a été trouvée !*"
     embed.description = desc
 
     await ctx.send(embed=embed)
@@ -196,15 +222,15 @@ def is_admin(u_id):
 def is_dm(channel):
     return isinstance(channel, discord.DMChannel)
 
-def create_ex(title, difficulty, desc, inputs, output, hidden):
+def create_ex(title, difficulty, desc, inputs, output, hidden, language):
     os.mkdir(title)
     dec = database.read("exercices.json")
-    data = {'difficulty': difficulty, 'date': database.get_time(), 'description': desc, 'inputs': inputs, 'output': output, 'hidden': hidden, 'test_amount': 0, 'executed_test': 0}
+    data = {'difficulty': difficulty, 'date': database.get_time(), 'description': desc, 'inputs': inputs, 'output': output, 'hidden': hidden, 'language': language, 'test_amount': 0, 'executed_test': 0}
     dec[title] = data
     database.write("exercices.json", dec)
     return show_ex(title, data)
 
-def edit_ex(title, difficulty, desc, inputs, output, hidden):
+def edit_ex(title, difficulty, desc, inputs, output, hidden, language):
     dec = database.read("exercices.json")
     ex = dec[title]
     if difficulty != -1: ex['difficulty'] = difficulty
@@ -212,6 +238,7 @@ def edit_ex(title, difficulty, desc, inputs, output, hidden):
     if inputs != "": ex['inputs'] = inputs
     if output != "": ex['output'] = output
     if hidden is not None: ex['hidden'] = hidden
+    if language is not None: ex['language'] = language
     database.write("exercices.json", dec)
     return show_ex(title, ex)
 
@@ -223,7 +250,8 @@ def delete_ex(title):
     dec = database.read("users.json")
     for u, data in dec.items():
         try:
-            data['score'] -= data['submit'][title]['score']
+            data['score']['general'] -= data['submit'][title]['score']
+            data['score'][data['submit'][title]['language'].lower()] -= data['submit'][title]['score']
             del data['submit'][title]
         except KeyError: pass
     database.write("users.json", dec)
@@ -231,20 +259,31 @@ def delete_ex(title):
 def show_ex(title, data):
     embed = discord.Embed(title=f"{title} ({data['difficulty']}:star:)")
     embed.description = data['description'] if data['description'] != "" else "*Non défini*"
-    embed.add_field(name="Entrées :", value=data['inputs'] if data['inputs'] != "" else "*Non défini*")
-    embed.add_field(name="Sortie :", value=data['output'] if data['output'] != "" else "*Non défini*")
+    embed.add_field(name="Langage :", value=data['language'].capitalize() if data['language'] != "all" else "*Tous*", inline=False)
+    embed.add_field(name="Entrées :", value=data['inputs'] if data['inputs'] != "" else "*Non défini*", inline=False)
+    embed.add_field(name="Sortie :", value=data['output'] if data['output'] != "" else "*Non défini*", inline=False)
 
     embed.set_footer(text='Créé le')
     embed.timestamp = datetime.strptime(data['date'], '%x %X')
     return embed
 
-def show_all_ex():
+def show_all_ex(lang):
     dec = database.read("exercices.json")
-    embed = discord.Embed(title=f"Liste des défis ({len(dec)})")
-    desc = ""
-    for title, ex in dec.items():
-        desc += f"▸ {title} ({ex['difficulty']}:star:)\n"
-    embed.description = desc if desc != "" else "Aucun défi n'a été trouvé !"
+    if lang == "all":
+        embed = discord.Embed(title=f"Liste de tous les défis ({len(dec)})")
+        desc = ""
+        for title, ex in dec.items():
+            if ex['language'] == "all": desc += f"▸ {title} ({ex['difficulty']}:star:)\n"
+            else: desc += f"▸ {title} [**{ex['language'].capitalize()}**] ({ex['difficulty']}:star:)\n"
+    else:
+        good_lang = {}
+        for title, ex in dec.items():
+            if ex['language'] == lang: good_lang[title] = ex
+        embed = discord.Embed(title=f"Liste des défis {lang.capitalize()} ({len(good_lang)})")
+        desc = ""
+        for title, ex in good_lang.items():
+            desc += f"▸ {title} [**{ex['language'].capitalize()}**] ({ex['difficulty']}:star:)\n"
+    embed.description = desc if desc != "" else "*Aucun défi n'a été trouvé !*"
     return embed
 
 def add_test(title, inp, out):
@@ -266,12 +305,16 @@ def show_user(u_disc, user):
     dec = database.read("exercices.json")
     embed = discord.Embed(title=f"Profile de {user['name']}")
     embed.set_thumbnail(url=str(u_disc.avatar_url))
-    embed.description = f":bar_chart: Score total : **{user['score']}**\n"
+    desc = f":bar_chart: __Score total : **{user['score']['general']}pts**__\n"
+    for l in listLang:
+        try: desc += f"▸ **{l.capitalize()}** : {user['score'][l]}pts\n"
+        except KeyError: desc += f"▸ **{l.capitalize()}** : 0pts\n"
+    embed.description = desc
     exercices = ""
     for title, ex in user['submit'].items():
-        exercices += f"▸ {title} ({dec[title]['difficulty']}:star:)"
+        exercices += f"▸ {title} ({dec[title]['difficulty']}:star:) **{user['submit'][title]['score']}pts**"
         exercices += " :white_check_mark:\n" if bool(ex['complete']) else " :x:\n"
-    if exercices == "": exercices = "Aucune participation n'a été trouvée !"
+    if exercices == "": exercices = "*Aucune participation n'a été trouvée !*"
 
     embed.add_field(name=f"Épreuves ({len(user['submit'])}/{len(dec)})", value=exercices)
     embed.set_footer(text='Créé le')
