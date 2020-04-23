@@ -22,7 +22,7 @@ async def on_ready():
 # ================== #
 # | ADMIN COMMANDS | #
 # ================== #
-@client.command(aliases=['createTest'])
+@client.command(aliases=['createTest', 'createExercise'])
 async def create(ctx, *argv):
     if not is_admin(ctx.message.author.id): return
     if not is_dm(ctx.channel): return
@@ -99,7 +99,7 @@ async def add(ctx, *argv):
         except KeyError:
             await ctx.send(f":x: **Aucun exercice du nom de `{title}` n'a été trouvé !**")
             return
-        add_test(title, inputs.replace("\\n", "\n"), outputs.replace("\\n", "\n"))
+        add_test(title, inputs.replace('/n', '\n').replace("\\n", "\n"), outputs.replace('/n', '\n').replace("\\n", "\n"))
         await ctx.send(f":white_check_mark: **Test pour le défi `{title}` créé avec succès !**")
     else:
         if title == "":
@@ -116,7 +116,7 @@ async def add(ctx, *argv):
 # ================= #
 # | USER COMMANDS | #
 # ================= #
-@client.command(aliases=["exercices", "list", "liste", "listes", "detail"])
+@client.command(aliases=["exercice", "exercices", "exercise", "exercises", "list", "liste", "listes", "detail"])
 async def exercice(ctx, name=""):
     dec = database.read("exercices.json")
     if name == "": # loop all exercice
@@ -181,7 +181,7 @@ async def on_message(message):
     except FileExistsError: pass
     try: username = client.get_guild(688355824934060032).get_member(author).nick
     except Exception: username = client.get_user(author).display_name
-    
+
     print(f"'{filename}' by {username}")
     path = f"{exercice}/{author}"
     await file.save(f"{path}/{filename}")
@@ -220,6 +220,13 @@ def delete_ex(title):
     dec = database.read("exercices.json")
     del dec[title]
     database.write("exercices.json", dec)
+    dec = database.read("users.json")
+    for u, data in dec.items():
+        try:
+            data['score'] -= data['submit'][title]['score']
+            del data['submit'][title]
+        except KeyError: pass
+    database.write("users.json", dec)
     
 def show_ex(title, data):
     embed = discord.Embed(title=f"{title} ({data['difficulty']}:star:)")
