@@ -63,7 +63,7 @@ They work like shell commands, with arguments like `-a "This an argument"`.
 
 #### Create a new test/exercise
 
-`!create -t <title> [-D -i -o -d -h -l -T]`
+`!create -t <title> [-D -i -o -d -h -l -T -e]`
 
 |    Argument    |                         Description                       |Default|
 | -------------- | --------------------------------------------------------- | ----- |
@@ -75,14 +75,15 @@ They work like shell commands, with arguments like `-a "This an argument"`.
 |-h --hidden     |If the needed output of a test is hide when error          | false |
 |-l --language   |Indicate the language of the exercice (Python, Java, C)    |  all  |
 |-T --timeout    |The maximum execution duration (in seconds) of the exercice|   10  |
+|-e --enable     |If the exercice is available or not                        | true  |
 
 Aliases : `!createTest`, `!createExercise`
 
-Example : `!create -t Addition -D "Calculate the addition of two number" -i "Two numbers, one per line" -o "The result of addition" -d 1 -h false -l Java -T 5`
+Example : `!create -t Addition -D "Calculate the addition of two number" -i "Two numbers, one per line" -o "The result of addition" -d 1 -h false -l Java -T 5 -e True`
 
 #### Edit an existing test/exercise
 
-`!edit -t <title> [-D -i -o -d -h -l -T]`
+`!edit -t <title> [-D -i -o -d -h -l -T -e]`
 
 See *Create a new test/exercise* for argument list.
 You must provide a correct exercise title to edit this test.
