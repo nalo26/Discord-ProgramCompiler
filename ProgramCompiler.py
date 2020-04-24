@@ -35,6 +35,7 @@ async def create(ctx, *argv):
     hidden = False
     language = "all"
     timeout = 10
+    enable = True
     for i, arg in enumerate(argv):
         if len(argv)-1 >= i+1 and '-' not in argv[i+1]:
             if arg in ['-t', '--title']: title = argv[i+1]
@@ -45,6 +46,7 @@ async def create(ctx, *argv):
             if arg in ['-h', '--hidden']: hidden = bool(argv[i+1].lower() == 'true')
             if arg in ['-l', '--language']: language = argv[i+1]
             if arg in ['-T', '--timeout']: timeout = int(argv[i+1])
+            if arg in ['-e', '--enable']: enable = bool(argv[i+1].lower() == 'true')
 
     if language != "all" and language.lower() not in listLang:
         await ctx.send(f":x: **Le langage `{language}` n'est pas (encore) supporté !**")
@@ -53,7 +55,7 @@ async def create(ctx, *argv):
         database.read("exercices.json")[title]
         await ctx.send(f":x: **Un défi du nom de `{title}` existe déjà ! **")
     except KeyError:
-        await ctx.send(embed=create_ex(title, difficulty, description, inputs, output, hidden, language.lower(), timeout))
+        await ctx.send(embed=create_ex(title, difficulty, description, inputs, output, hidden, language.lower(), timeout, enable))
         print(f"Exercise '{title}' ({difficulty}) [{language}] created by {ctx.message.author.name}")
 
 @client.command()
@@ -68,6 +70,7 @@ async def edit(ctx, *argv):
     hidden = None
     language = "all"
     timeout = -1
+    enable = None
     for i, arg in enumerate(argv):
         if len(argv)-1 >= i+1 and '-' not in argv[i+1]:
             if arg in ['-t', '--title']: title = argv[i+1]
@@ -78,13 +81,14 @@ async def edit(ctx, *argv):
             if arg in ['-h', '--hidden']: hidden = bool(argv[i+1].lower() == 'true')
             if arg in ['-l', '--language']: language = argv[i+1]
             if arg in ['-T', '--timeout']: timeout = int(argv[i+1])
+            if arg in ['-e', '--enable']: enable = bool(argv[i+1].lower() == 'true')
 
     if language != "all" and language.lower() not in listLang:
         await ctx.send(f":x: **Le langage `{language}` n'est pas (encore) supporté !**")
         return
     try:
         database.read("exercices.json")[title]
-        await ctx.send(embed=edit_ex(title, difficulty, description, inputs, output, hidden, language.lower(), timeout))
+        await ctx.send(embed=edit_ex(title, difficulty, description, inputs, output, hidden, language.lower(), timeout, enable))
         print(f"Exercise '{title}' ({difficulty}) [{language}] edited by {ctx.message.author.name}")
     except KeyError: await ctx.send(f":x: **Aucun exercice du nom de `{title}` n'a été trouvé !**")
 
@@ -231,15 +235,15 @@ def is_admin(u_id):
 def is_dm(channel):
     return isinstance(channel, discord.DMChannel)
 
-def create_ex(title, difficulty, desc, inputs, output, hidden, language, timeout):
+def create_ex(title, difficulty, desc, inputs, output, hidden, language, timeout, enable):
     os.mkdir(title)
     dec = database.read("exercices.json")
-    data = {'difficulty': difficulty, 'date': database.get_time(), 'description': desc, 'inputs': inputs, 'output': output, 'hidden': hidden, 'language': language, 'timeout': timeout, 'test_amount': 0, 'executed_test': 0}
+    data = {'difficulty': difficulty, 'date': database.get_time(), 'description': desc, 'inputs': inputs, 'output': output, 'hidden': hidden, 'language': language, 'timeout': timeout, 'enable': enable, 'test_amount': 0, 'executed_test': 0}
     dec[title] = data
     database.write("exercices.json", dec)
     return show_ex(title, data)
 
-def edit_ex(title, difficulty, desc, inputs, output, hidden, language, timeout):
+def edit_ex(title, difficulty, desc, inputs, output, hidden, language, timeout, enable):
     dec = database.read("exercices.json")
     ex = dec[title]
     if difficulty != -1: ex['difficulty'] = difficulty
@@ -249,6 +253,7 @@ def edit_ex(title, difficulty, desc, inputs, output, hidden, language, timeout):
     if hidden is not None: ex['hidden'] = hidden
     if language is not None: ex['language'] = language
     if timeout != -1: ex['timeout'] = timeout
+    if enable is not None: ex['enable'] = enable
     database.write("exercices.json", dec)
     return show_ex(title, ex)
 
@@ -270,6 +275,7 @@ def show_ex(title, data):
     embed = discord.Embed(title=f"{title} ({data['difficulty']}:star:)")
     embed.description = data['description'] if data['description'] != "" else "*Non défini*"
     embed.add_field(name="Langage :", value=data['language'].capitalize() if data['language'] != "all" else "*Tous*", inline=False)
+    embed.add_field(name="Disponibilité :", value=":white_check_mark: Ouvert" if bool(data['enable']) else ":x: Fermé")
     embed.add_field(name="Entrées :", value=data['inputs'] if data['inputs'] != "" else "*Non défini*", inline=False)
     embed.add_field(name="Sortie :", value=data['output'] if data['output'] != "" else "*Non défini*", inline=False)
 
@@ -283,8 +289,10 @@ def show_all_ex(lang):
         embed = discord.Embed(title=f"Liste de tous les défis ({len(dec)})")
         desc = ""
         for title, ex in dec.items():
-            if ex['language'] == "all": desc += f"▸ {title} ({ex['difficulty']}:star:)\n"
-            else: desc += f"▸ {title} [**{ex['language'].capitalize()}**] ({ex['difficulty']}:star:)\n"
+            desc += "\n~~" if not bool(ex['enable']) else "\n"
+            if ex['language'] == "all": desc += f"▸ {title} ({ex['difficulty']}:star:)"
+            else: desc += f"▸ {title} [**{ex['language'].capitalize()}**] ({ex['difficulty']}:star:)"
+            if not bool(ex['enable']): desc += "~~"
     else:
         good_lang = {}
         for title, ex in dec.items():
@@ -292,7 +300,9 @@ def show_all_ex(lang):
         embed = discord.Embed(title=f"Liste des défis {lang.capitalize()} ({len(good_lang)})")
         desc = ""
         for title, ex in good_lang.items():
-            desc += f"▸ {title} [**{ex['language'].capitalize()}**] ({ex['difficulty']}:star:)\n"
+            desc += "\n~~" if not bool(ex['enable']) else "\n"
+            desc += f"▸ {title} [**{ex['language'].capitalize()}**] ({ex['difficulty']}:star:)"
+            if not bool(ex['enable']): desc += "~~"
     embed.description = desc if desc != "" else "*Aucun défi n'a été trouvé !*"
     return embed
 

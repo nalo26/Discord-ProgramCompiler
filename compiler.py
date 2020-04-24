@@ -10,6 +10,10 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
 
     exercice = database.read("exercices.json")[exer_name]
 
+    if not bool(exercice['enable']):
+        await msg.edit(content=f":x: **Cet exercice n'est pas/plus disponible !**")
+        return
+
     try: lang = language[extension]
     except KeyError:
         await msg.edit(content=f":x: **`{extension}` n'est pas une extension valide !**")
