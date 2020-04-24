@@ -63,25 +63,26 @@ They work like shell commands, with arguments like `-a "This an argument"`.
 
 #### Create a new test/exercise
 
-`!create -t <title> [-D -i -o -d -h -l]`
+`!create -t <title> [-D -i -o -d -h -l -T]`
 
-|    Argument    |                      Description                      |Default|
-| -------------- | ----------------------------------------------------- | ----- |
-|-t --title      |**Needed** The title of the exercice                   |       |
-|-D --description|The description of the exercice                        |*Empty*|
-|-i --input      |Description of the input sending by the exercice       |*Empty*|
-|-o --output     |Description of the needed output of the exercice       |*Empty*|
-|-d --difficulty |The difficulty of the exercice (between 1 and 10)      |   1   |
-|-h --hidden     |If the needed output of a test is hide when error      | false |
-|-l --language   |Indicate the language of the exercice (Python, Java, C)|  all  |
+|    Argument    |                         Description                       |Default|
+| -------------- | --------------------------------------------------------- | ----- |
+|-t --title      |**Needed** The title of the exercice                       |       |
+|-D --description|The description of the exercice                            |*Empty*|
+|-i --input      |Description of the input sending by the exercice           |*Empty*|
+|-o --output     |Description of the needed output of the exercice           |*Empty*|
+|-d --difficulty |The difficulty of the exercice (between 1 and 10)          |   1   |
+|-h --hidden     |If the needed output of a test is hide when error          | false |
+|-l --language   |Indicate the language of the exercice (Python, Java, C)    |  all  |
+|-T --timeout    |The maximum execution duration (in seconds) of the exercice|   10  |
 
 Aliases : `!createTest`, `!createExercise`
 
-Example : `!create -t Addition -D "Calculate the addition of two number" -i "Two numbers, one per line" -o "The result of addition" -d 1 -h false`
+Example : `!create -t Addition -D "Calculate the addition of two number" -i "Two numbers, one per line" -o "The result of addition" -d 1 -h false -l Java -T 5`
 
 #### Edit an existing test/exercise
 
-`!edit -t <title> [-D -i -o -d -h -l]`
+`!edit -t <title> [-D -i -o -d -h -l -T]`
 
 See *Create a new test/exercise* for argument list.
 You must provide a correct exercise title to edit this test.
