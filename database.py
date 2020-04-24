@@ -41,6 +41,8 @@ def write(path, data):
     mf.close()
 
 def get_time(time_format='%x %X'):
-    tz_FR = pytz.timezone('Europe/Paris')
+    # tz_FR = pytz.timezone('Europe/Paris')
+    # tz_FR = None
+    tz_FR = pytz.timezone('Etc/GMT-0')
     time = datetime.now(tz_FR)
     return str(time.strftime(time_format))

@@ -52,7 +52,9 @@ async def create(ctx, *argv):
     try:
         database.read("exercices.json")[title]
         await ctx.send(f":x: **Un défi du nom de `{title}` existe déjà ! **")
-    except KeyError: await ctx.send(embed=create_ex(title, difficulty, description, inputs, output, hidden, language.lower(), timeout))
+    except KeyError:
+        await ctx.send(embed=create_ex(title, difficulty, description, inputs, output, hidden, language.lower(), timeout))
+        print(f"Exercise '{title}' ({difficulty}) [{language}] created by {ctx.message.author.name}")
 
 @client.command()
 async def edit(ctx, *argv):
@@ -83,6 +85,7 @@ async def edit(ctx, *argv):
     try:
         database.read("exercices.json")[title]
         await ctx.send(embed=edit_ex(title, difficulty, description, inputs, output, hidden, language.lower(), timeout))
+        print(f"Exercise '{title}' ({difficulty}) [{language}] edited by {ctx.message.author.name}")
     except KeyError: await ctx.send(f":x: **Aucun exercice du nom de `{title}` n'a été trouvé !**")
 
 @client.command(aliases=['del', 'delete'])
@@ -94,6 +97,7 @@ async def remove(ctx, title):
         return
     delete_ex(title)
     await ctx.send(f":white_check_mark: **Défi `{title}` supprimé avec succès !**")
+    print(f"Exercise '{title}' deleted by {ctx.message.author.name}")
 
 @client.command(aliases=['addTest'])
 async def add(ctx, *argv):
@@ -116,6 +120,7 @@ async def add(ctx, *argv):
             return
         add_test(title, inputs.replace('/n', '\n').replace("\\n", "\n"), outputs.replace('/n', '\n').replace("\\n", "\n"))
         await ctx.send(f":white_check_mark: **Test pour le défi `{title}` créé avec succès !**")
+        print(f"Test added for '{title}' by {ctx.message.author.name}")
     else:
         if title == "":
             await ctx.send(":x: **Veuillez préciser le __titre__ du défi !** (`-t`)")
