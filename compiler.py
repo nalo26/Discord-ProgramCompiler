@@ -71,7 +71,7 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
     for i in range(1, testAmount+1):
 
         inp = open(f"{exer_name}/in_{i}.txt", "r").read()
-        process = run(f"timeout -v {timeout} {bashCommand}", input=inp, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
+        process = run(f"sudo -u programcompiler timeout -v {timeout} {bashCommand}", input=inp, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
         output = process.stdout
         error  = process.stderr
         if output == '': output = ' '
