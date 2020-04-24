@@ -24,11 +24,20 @@ Une fois que le test a été envoyé, il va être exécuté et testé avec les t
 
 #### Lister tous les tests disponibles
 
-`!list`
+`!list [langage]`
 
-Envoie la liste des tests existants disponibles.
+Si `langage` est spécifié, envoie la liste de tous les exercices de ce langage.
+S'il ne l'est pas, envoie la liste de tous les exercices disponibles dans tous les langages.
 
-Alias: `!liste`, `!listes`, `!exercice`, `!exercices`, `!exercise` , `!exercises`
+Alias : `!liste`, `!listes`
+
+#### Afficher les détails d'un exercice
+
+`!detail <titre>`
+
+Envoie les détails d'un exercice spécifique.
+
+Alias : `!exercice`, `!exercise`, `!details`
 
 #### Afficher votre profil
 
@@ -40,9 +49,10 @@ Alias: `!profile`, `!me`
 
 #### Classement
 
-`!classement`
+`!classement [langage]`
 
-Envoie le classement général de tous les participants, trié par score total.
+Si `langage` est spécifié, envoie le classement de tous les exercices de ce langage, trié par score du langage.
+S'il ne l'est pas, envoie le classement général de tous les participants, trié par score total.
 
 Alias: `!leaderboard`, `!top`
 
@@ -53,24 +63,26 @@ Elles fonctionnent de la même manière que les commandes shell, avec des argume
 
 #### Créer un nouvel exercice
 
-`!create -t <titre> [-D -i -o -d -h]`
+`!create -t <titre> [-D -i -o -d -h -l -T]`
 
-|    Argument    |                  Description                    | Défaut |
-| -------------- | ----------------------------------------------- | ------ |
-|-t --title      |**Obligatoir** Le titre de l'exercice            |        |
-|-D --description|La description de l'exercice                     | *Vide* |
-|-i --input      |Description des entrées envoyées par l'exercice  | *Vide* |
-|-o --output     |Description des sorties attendues par l'exercice | *vide* |
-|-d --difficulty |La difficulté de l'exercice (entre 1 et 10)      |   1    |
-|-h --hidden     |Si la sortie attendue doit être masquée ou non   | false  |
+|    Argument    |                     Description                     | Défaut |
+| -------------- | --------------------------------------------------- | ------ |
+|-t --title      |**Obligatoire** Le titre de l'exercice               |        |
+|-D --description|La description de l'exercice                         | *Vide* |
+|-i --input      |Description des entrées envoyées par l'exercice      | *Vide* |
+|-o --output     |Description des sorties attendues par l'exercice     | *vide* |
+|-d --difficulty |La difficulté de l'exercice (entre 1 et 10)          |   1    |
+|-h --hidden     |Si la sortie attendue doit être masquée ou non       | false  |
+|-l --language   |Indiquer le langage de l'exercice (Python, Java, C)  |  tous  |
+|-T --timeout    |Temps maximum d'exécution (en secondes) de l'exercice|   10   |
 
 Alias : `!createTest`, `!createExercise`
 
-Exemple : `!create -t Addition -D "Calculez l'addition de deux nombres" -i "Deux nombres, un par ligne" -o "Le résultat de l'addition" -d 1 -h false`
+Exemple : `!create -t Addition -D "Calculez l'addition de deux nombres" -i "Deux nombres, un par ligne" -o "Le résultat de l'addition" -d 1 -h false -l Java -T 5`
 
 #### Modifier un exercice existant
 
-`!edit -t <titre> [-D -i -o -d -h]`
+`!edit -t <titre> [-D -i -o -d -h -l -T]`
 
 Voir *Créer un nouvel exercice* pour la liste des arguments.
 Vous devez fournir un titre/nom d'exercice correct pour pouvoir l'editer.
