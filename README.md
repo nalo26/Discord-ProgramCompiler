@@ -37,7 +37,7 @@ Aliases: `!liste`, `!listes`
 
 Send details of a specific exercise.
 
-Aliases: `!exercice`, `!exercise`, `details`
+Aliases: `!exercice`, `!exercise`, `!details`
 
 #### See your profile
 
