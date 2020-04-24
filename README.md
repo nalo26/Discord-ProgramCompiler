@@ -51,8 +51,8 @@ Aliases: `!profil`, `!me`
 
 `!leaderboard [language]`
 
-If `language` specified, send the leaderboard for all exercises of this language.
-If not, send general leaderboard.
+If `language` specified, send the leaderboard for all exercises of this language, ordered by language's score.
+If not, send general leaderboard, ordered by total score.
 
 Aliases: `!classement`, `!top`
 
