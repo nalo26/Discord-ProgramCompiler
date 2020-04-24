@@ -63,7 +63,7 @@ Elles fonctionnent de la même manière que les commandes shell, avec des argume
 
 #### Créer un nouvel exercice
 
-`!create -t <titre> [-D -i -o -d -h -l -T]`
+`!create -t <titre> [-D -i -o -d -h -l -T -e]`
 
 |    Argument    |                     Description                     | Défaut |
 | -------------- | --------------------------------------------------- | ------ |
@@ -75,6 +75,7 @@ Elles fonctionnent de la même manière que les commandes shell, avec des argume
 |-h --hidden     |Si la sortie attendue doit être masquée ou non       | false  |
 |-l --language   |Indiquer le langage de l'exercice (Python, Java, C)  |  tous  |
 |-T --timeout    |Temps maximum d'exécution (en secondes) de l'exercice|   10   |
+|-e --enable     |Si l'exercice est disponible ou non                  | true   |
 
 Alias : `!createTest`, `!createExercise`
 
@@ -82,7 +83,7 @@ Exemple : `!create -t Addition -D "Calculez l'addition de deux nombres" -i "Deux
 
 #### Modifier un exercice existant
 
-`!edit -t <titre> [-D -i -o -d -h -l -T]`
+`!edit -t <titre> [-D -i -o -d -h -l -T -e]`
 
 Voir *Créer un nouvel exercice* pour la liste des arguments.
 Vous devez fournir un titre/nom d'exercice correct pour pouvoir l'editer.
