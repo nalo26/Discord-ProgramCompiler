@@ -60,6 +60,7 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
     testAmount = ex_data['test_amount']
     difficulty = ex_data['difficulty']
     ishidden = bool(ex_data['hidden'])
+    timeout = ex_data['timeout']
     ex_data['executed_test'] += 1
     database.write("exercices.json", dec)
     
@@ -70,17 +71,18 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
     for i in range(1, testAmount+1):
 
         inp = open(f"{exer_name}/in_{i}.txt", "r").read()
-        process = run(bashCommand, input=inp, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
+        process = run(f"timeout -v {timeout} {bashCommand}", input=inp, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
         output = process.stdout
         error  = process.stderr
         if output == '': output = ' '
-        # if error  == '': error  = ' '
 
         neededOut = open(f"{exer_name}/out_{i}.txt", "r").read()
         
         if error != '': # on error
-            if not ishidden: await msg.edit(content=f"{msg.content}\n`{i}/{testAmount}` :x: **Test échoué : votre programme a rencontré une erreur.**\nSortie standard attendue :```{neededOut[:-1]}```\nSortie standard du programme :```{output}```\nSortie d'erreur du programme :```{error}```")
-            else: await msg.edit(content=f"{msg.content}\n`{i}/{testAmount}` :x: **Test échoué : votre programme a rencontré une erreur.**\n*Sortie attendue masquée pour ce défi*\nSortie standard du programme :```{output}```\nSortie d'erreur du programme :```{error}```")
+            if error.startswith("timeout:"): await msg.edit(content=f"{msg.content}\n`{i}/{testAmount}` :x: **Test échoué : Votre programme a mis trop de temps à répondre !**")
+            else:
+                if not ishidden: await msg.edit(content=f"{msg.content}\n`{i}/{testAmount}` :x: **Test échoué : votre programme a rencontré une erreur.**\nSortie standard attendue :```{neededOut[:-1]}```\nSortie standard du programme :```{output}```\nSortie d'erreur du programme :```{error}```")
+                else: await msg.edit(content=f"{msg.content}\n`{i}/{testAmount}` :x: **Test échoué : votre programme a rencontré une erreur.**\n*Sortie attendue masquée pour ce défi*\nSortie standard du programme :```{output}```\nSortie d'erreur du programme :```{error}```")
             print('. Failed!')
             is_top, submition = database.add_submition(author, username, exer_name, language[extension], exercice_done, False, 0)
             if not is_top and submition['complete']: await msg.edit(content=f"{msg.content}\nTu as déjà réussi cet exercice le `{submition['date'].split(' ')[0]}` en `{submition['language']}` !")

@@ -34,6 +34,7 @@ async def create(ctx, *argv):
     difficulty = 1
     hidden = False
     language = "all"
+    timeout = 10
     for i, arg in enumerate(argv):
         if len(argv)-1 >= i+1 and '-' not in argv[i+1]:
             if arg in ['-t', '--title']: title = argv[i+1]
@@ -43,6 +44,7 @@ async def create(ctx, *argv):
             if arg in ['-d', '--difficulty']: difficulty = int(argv[i+1])
             if arg in ['-h', '--hidden']: hidden = bool(argv[i+1].lower() == 'true')
             if arg in ['-l', '--language']: language = argv[i+1]
+            if arg in ['-T', '--timeout']: timeout = int(argv[i+1])
 
     if language != "all" and language.lower() not in listLang:
         await ctx.send(f":x: **Le langage `{language}` n'est pas (encore) supporté !**")
@@ -50,7 +52,7 @@ async def create(ctx, *argv):
     try:
         database.read("exercices.json")[title]
         await ctx.send(f":x: **Un défi du nom de `{title}` existe déjà ! **")
-    except KeyError: await ctx.send(embed=create_ex(title, difficulty, description, inputs, output, hidden, language.lower()))
+    except KeyError: await ctx.send(embed=create_ex(title, difficulty, description, inputs, output, hidden, language.lower(), timeout))
 
 @client.command()
 async def edit(ctx, *argv):
@@ -63,6 +65,7 @@ async def edit(ctx, *argv):
     difficulty = -1
     hidden = None
     language = "all"
+    timeout = -1
     for i, arg in enumerate(argv):
         if len(argv)-1 >= i+1 and '-' not in argv[i+1]:
             if arg in ['-t', '--title']: title = argv[i+1]
@@ -72,13 +75,14 @@ async def edit(ctx, *argv):
             if arg in ['-d', '--difficulty']: difficulty = int(argv[i+1])
             if arg in ['-h', '--hidden']: hidden = bool(argv[i+1].lower() == 'true')
             if arg in ['-l', '--language']: language = argv[i+1]
+            if arg in ['-T', '--timeout']: timeout = int(argv[i+1])
 
     if language != "all" and language.lower() not in listLang:
         await ctx.send(f":x: **Le langage `{language}` n'est pas (encore) supporté !**")
         return
     try:
         database.read("exercices.json")[title]
-        await ctx.send(embed=edit_ex(title, difficulty, description, inputs, output, hidden, language.lower()))
+        await ctx.send(embed=edit_ex(title, difficulty, description, inputs, output, hidden, language.lower(), timeout))
     except KeyError: await ctx.send(f":x: **Aucun exercice du nom de `{title}` n'a été trouvé !**")
 
 @client.command(aliases=['del', 'delete'])
@@ -222,15 +226,15 @@ def is_admin(u_id):
 def is_dm(channel):
     return isinstance(channel, discord.DMChannel)
 
-def create_ex(title, difficulty, desc, inputs, output, hidden, language):
+def create_ex(title, difficulty, desc, inputs, output, hidden, language, timeout):
     os.mkdir(title)
     dec = database.read("exercices.json")
-    data = {'difficulty': difficulty, 'date': database.get_time(), 'description': desc, 'inputs': inputs, 'output': output, 'hidden': hidden, 'language': language, 'test_amount': 0, 'executed_test': 0}
+    data = {'difficulty': difficulty, 'date': database.get_time(), 'description': desc, 'inputs': inputs, 'output': output, 'hidden': hidden, 'language': language, 'timeout': timeout, 'test_amount': 0, 'executed_test': 0}
     dec[title] = data
     database.write("exercices.json", dec)
     return show_ex(title, data)
 
-def edit_ex(title, difficulty, desc, inputs, output, hidden, language):
+def edit_ex(title, difficulty, desc, inputs, output, hidden, language, timeout):
     dec = database.read("exercices.json")
     ex = dec[title]
     if difficulty != -1: ex['difficulty'] = difficulty
@@ -239,6 +243,7 @@ def edit_ex(title, difficulty, desc, inputs, output, hidden, language):
     if output != "": ex['output'] = output
     if hidden is not None: ex['hidden'] = hidden
     if language is not None: ex['language'] = language
+    if timeout != -1: ex['timeout'] = timeout
     database.write("exercices.json", dec)
     return show_ex(title, ex)
 
