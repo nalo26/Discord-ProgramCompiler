@@ -14,14 +14,6 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
         await msg.edit(content=f":x: **Cet exercice n'est pas/plus disponible !**")
         return
 
-    try: lang = language[extension]
-    except KeyError:
-        await msg.edit(content=f":x: **`{extension}` n'est pas une extension valide !**")
-        return
-    if exercice['language'] != "all" and lang.lower() != exercice['language']:
-        await msg.edit(content=f":x: **Cet exercice est seulement disponible en `{exercice['language'].capitalize()}` !**")
-        return
-
     bashCommand = ''
     if extension == '.zip':
         bashCommand = f"unzip -o {filename} -d {filename[:-4]}" # -o Overwrite / -d Destination
@@ -36,6 +28,14 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
         pathFile += '/'+filename
         extension = '.'+file.split('.')[-1]
         filename += extension
+
+    try: lang = language[extension]
+    except KeyError:
+        await msg.edit(content=f":x: **`{extension}` n'est pas une extension valide !**")
+        return
+    if exercice['language'] != "all" and lang.lower() != exercice['language']:
+        await msg.edit(content=f":x: **Cet exercice est seulement disponible en `{exercice['language'].capitalize()}` !**")
+        return
 
     if extension == '.py': bashCommand = f"python3 -S {filename}"
     if extension == '.java':
