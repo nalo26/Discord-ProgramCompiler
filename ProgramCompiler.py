@@ -180,6 +180,7 @@ async def leaderboard(ctx, lang="all"):
             try: res[u['name']] = u['score'][lang.lower()]
             except KeyError: pass
     res = sorted(res.items(), key = lambda kv:(kv[1], kv[0]))
+    res.reverse()
     
     if lang.lower() == "all": embed = discord.Embed(title=":trophy: Classement général")
     else: embed = discord.Embed(title=f":trophy: Classement général {lang.capitalize()}")
@@ -263,20 +264,21 @@ def delete_ex(title):
     del dec[title]
     database.write("exercices.json", dec)
     dec = database.read("users.json")
-    for u, data in dec.items():
+    for user in dec.values():
         try:
-            data['score']['general'] -= data['submit'][title]['score']
-            data['score'][data['submit'][title]['language'].lower()] -= data['submit'][title]['score']
-            del data['submit'][title]
+            user['score']['general'] -= user['submit'][title]['best_score']
+            for sub, data in user['submit'][title].items():
+                if sub not in ["best_score", "complete"]: user['score'][sub] -= data['score']
+            del user['submit'][title]
         except KeyError: pass
     database.write("users.json", dec)
     
 def show_ex(title, data):
     embed = discord.Embed(title=f"{title} ({data['difficulty']}:star:)")
     embed.description = data['description'] if data['description'] != "" else "*Non défini*"
-    embed.add_field(name="Langage :", value=data['language'].capitalize() if data['language'] != "all" else "*Tous*", inline=False)
+    embed.add_field(name="Langage :", value=data['language'].capitalize() if data['language'] != "all" else "*Tous*")
     embed.add_field(name="Disponibilité :", value=":white_check_mark: Ouvert" if bool(data['enable']) else ":x: Fermé")
-    embed.add_field(name="Entrées :", value=data['inputs'] if data['inputs'] != "" else "*Non défini*", inline=False)
+    embed.add_field(name="Entrée :", value=data['inputs'] if data['inputs'] != "" else "*Non défini*", inline=False)
     embed.add_field(name="Sortie :", value=data['output'] if data['output'] != "" else "*Non défini*", inline=False)
 
     embed.set_footer(text='Créé le')
@@ -332,7 +334,7 @@ def show_user(u_disc, user):
     embed.description = desc
     exercices = ""
     for title, ex in user['submit'].items():
-        exercices += f"▸ {title} ({dec[title]['difficulty']}:star:) **{user['submit'][title]['score']}pts**"
+        exercices += f"▸ {title} ({dec[title]['difficulty']}:star:) **{user['submit'][title]['best_score']}pts**"
         exercices += " :white_check_mark:\n" if bool(ex['complete']) else " :x:\n"
     if exercices == "": exercices = "*Aucune participation n'a été trouvée !*"
 
