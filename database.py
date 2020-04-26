@@ -18,7 +18,7 @@ def add_submition(user_id, user_name, exer, lang, tests, complete, score):
     except KeyError: sub = {}
     ret = ""
     try:
-        if score <= sub['score']: ret = f"Tu as déjà réussi cet exercice en `{'` ,`'.join([name.capitalize() for name, data in ex.items() if name not in ['best_score', 'complete'] and bool(data['complete'])])}` !"
+        if score <= sub['score'] and bool(ex['complete']): ret = f"Tu as déjà réussi cet exercice en `{'` ,`'.join([name.capitalize() for name, data in ex.items() if name not in ['best_score', 'complete'] and bool(data['complete'])])}` !"
     except KeyError: pass
     
     if ret == "":
