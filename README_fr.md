@@ -4,6 +4,8 @@ Un bot pour compiler et exécuter les programmes envoyés sur discord.
 
 Ce bot n'accepte que les fichiers Python, Java et C. Si vous voulez en ajouter, proposez-le moi !
 
+**Les entrées sont données par __l'entré standard__ (*stdin*), et pas par arguments !**
+
 ## Submition
 
 Pour envoyer un test, envoyez le fichier par message privé à `ProgramCompiler#3290`.
