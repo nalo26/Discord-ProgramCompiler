@@ -71,9 +71,12 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
     timeout = ex_data['timeout']
     ex_data['executed_test'] += 1
     database.write("exercices.json", dec)
+
+    pwd = open("PWD", 'r').read()
     
     print(f"Running {filename}..", end='')
     await msg.edit(content=f"`{exer_name}` ({exercice['difficulty']}:star:) [{language[extension]}]\n:clock1: Exécution du programme en cours...")
+    run(f"echo {pwd} | sudo -S -u programcompiler cat empty", check=False, shell=True) # connecting
 
     exercice_done = 0
     for i in range(1, testAmount+1):
