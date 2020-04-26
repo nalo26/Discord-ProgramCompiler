@@ -32,7 +32,7 @@ async def create(ctx, *argv):
     inputs = ""
     output = ""
     difficulty = 1
-    hidden = False
+    hidden = True
     language = "all"
     timeout = 10
     enable = True
@@ -89,11 +89,13 @@ async def edit(ctx, *argv):
     try:
         database.read("exercices.json")[title]
         await ctx.send(embed=edit_ex(title, difficulty, description, inputs, output, hidden, language.lower(), timeout, enable))
-        print(f"Exercise '{title}' ({difficulty}) [{language}] edited by {ctx.message.author.name}")
+        print(f"Exercise '{title}' [{language}] edited by {ctx.message.author.name}")
     except KeyError: await ctx.send(f":x: **Aucun exercice du nom de `{title}` n'a été trouvé !**")
 
 @client.command(aliases=['del', 'delete'])
 async def remove(ctx, title):
+    if not is_admin(ctx.message.author.id): return
+    if not is_dm(ctx.channel): return
     dec = database.read("exercices.json")
     try: dec[title]
     except KeyError:
@@ -278,6 +280,7 @@ def show_ex(title, data):
     embed.description = data['description'] if data['description'] != "" else "*Non défini*"
     embed.add_field(name="Langage :", value=data['language'].capitalize() if data['language'] != "all" else "*Tous*")
     embed.add_field(name="Disponibilité :", value=":white_check_mark: Ouvert" if bool(data['enable']) else ":x: Fermé")
+    embed.add_field(name="Affichage des sorties :", value=":eyes: Affichées" if not bool(data['hidden']) else ":see_no_evil: Masquées")
     embed.add_field(name="Entrée :", value=data['inputs'] if data['inputs'] != "" else "*Non défini*", inline=False)
     embed.add_field(name="Sortie :", value=data['output'] if data['output'] != "" else "*Non défini*", inline=False)
 
