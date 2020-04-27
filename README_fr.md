@@ -2,7 +2,7 @@
 Un bot pour compiler et exécuter les programmes envoyés sur discord.
 **Ce bot a été créé pour un challenge privé. Si vous voulez l'utiliser, vous devrez certainement le modifier.**
 
-Ce bot n'accepte que les fichiers Python, Java et C. Si vous voulez en ajouter, proposez-le moi !
+Ce bot n'accepte que les fichiers Python, Java, C et C++. Si vous voulez en ajouter, proposez-le moi !
 
 **Les entrées sont données par __l'entré standard__ (*stdin*), et pas par arguments !**
 
