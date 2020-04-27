@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import os
+import operator
 
 from compiler import compute
 import database
@@ -176,19 +177,24 @@ async def leaderboard(ctx, lang="all"):
         return
     dec = database.read("users.json")
     res = {}
-    for u in dec.values():
-        if lang.lower() == "all": res[u['name']] = u['score']['general']
-        else:
-            try: res[u['name']] = u['score'][lang.lower()]
-            except KeyError: pass
-    res = sorted(res.items(), key = lambda kv:(kv[1], kv[0]))
-    res.reverse()
+    for i, u in dec.items():
+        if i != "520334699046895617":
+            if lang.lower() == "all": res[u['name']] = u['score']['general']
+            else:
+                try: res[u['name']] = u['score'][lang.lower()]
+                except KeyError: pass
+    res = dict(sorted(res.items(), key=operator.itemgetter(1), reverse=True))
+    emoji = {'1': ':first_place:', '2': ':second_place:', '3': ':third_place:'}
+    last = -1
     
     if lang.lower() == "all": embed = discord.Embed(title=":trophy: Classement général")
     else: embed = discord.Embed(title=f":trophy: Classement général {lang.capitalize()}")
     desc = ""
-    for i, (name, score) in enumerate(res):
-        desc += f"{i+1} : {name} ({score}pts)\n"
+    for i, (name, score) in enumerate(res.items()):
+        if score != last:
+            ind = emoji[str(i+1)] if str(i+1) in emoji.keys() else str(i+1)+" "
+        desc += f"{ind}: {name} ({score}pts)\n"
+        last = score
     if desc == "": desc = "*Aucune participation n'a été trouvée !*"
     embed.description = desc
 

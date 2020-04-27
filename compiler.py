@@ -3,8 +3,8 @@ import os
 
 import database
 
-language = {'.py': 'Python', '.java': 'Java', '.class': 'Java', '.c': 'C'}
-listLang = ["python", "java", "c"]
+language = {'.py': 'Python', '.java': 'Java', '.class': 'Java', '.c': 'C', '.js': 'NodeJS'}
+listLang = ["python", "java", "c", "nodejs"]
 
 async def compute(pathFile, filename, extension, exer_name, msg, author, username):
 
@@ -38,6 +38,7 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
         return
 
     if extension == '.py': bashCommand = f"python3 -S {filename}"
+    if extension == '.js': bashCommand = f"node {filename}"
     if extension == '.java':
         bashCommand = "javac *.java"
         p = run(bashCommand, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
