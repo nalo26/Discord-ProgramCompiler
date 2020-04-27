@@ -3,8 +3,8 @@ import os
 
 import database
 
-language = {'.py': 'Python', '.java': 'Java', '.class': 'Java', '.c': 'C', '.cpp': 'C++', '.js': 'NodeJS'}
-listLang = ["python", "java", "c", "cpp", "nodejs"]
+language = {'.py': 'Python', '.java': 'Java', '.class': 'Java', '.c': 'C', '.cpp': 'C++', '.cs': 'C#', '.js': 'NodeJS'}
+listLang = ["python", "java", "c", "cpp", "c#", "nodejs"]
 
 async def compute(pathFile, filename, extension, exer_name, msg, author, username):
 
@@ -79,6 +79,21 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
             return
         bashCommand = f"./{filename}_cpp"
 
+    if extension == ".cs":
+        try: os.remove(f"{pathFile}/{filename[:-3]}.exe")
+        except FileNotFoundError: pass
+
+        bashCommand = f"mcs -optimize+ {filename}"
+        p = run(bashCommand, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
+        
+        filename = filename[:-3]
+        newFile = checkFile(pathFile, f"{filename}.exe")
+        if newFile is None:
+            await msg.edit(content=f"`{exer_name}` ({exercice['difficulty']}:star:) [{language[extension]}]\n:x: **Erreur de compilation !** ```{p.stderr}```")
+            print("Compilation Error")
+            return
+        bashCommand = f"mono {filename}.exe"
+
     dec = database.read("exercices.json")
     ex_data = dec[exer_name]
     testAmount = ex_data['test_amount']
@@ -98,11 +113,12 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
     for i in range(1, testAmount+1):
 
         inp = open(f"{exer_name}/in_{i}.txt", "r").read()
-        process = run(f'echo "{inp}" | sudo -u programcompiler timeout -v {timeout} {bashCommand}', stdout=PIPE, stderr=PIPE, check=False, cwd=pathFile, shell=True, universal_newlines=True)
-        output = process.stdout
-        error  = process.stderr
-        if output == '': output = ' '
-
+        try:
+            process = run(f'echo "{inp}" | sudo -u programcompiler timeout -v {timeout} {bashCommand}', stdout=PIPE, stderr=PIPE, check=False, cwd=pathFile, shell=True, universal_newlines=True)                
+            output = process.stdout
+            error  = process.stderr
+            if output == '': output = ' '
+        except UnicodeDecodeError as e: error = e
         neededOut = open(f"{exer_name}/out_{i}.txt", "r").read()
         
         if error != '': # on error

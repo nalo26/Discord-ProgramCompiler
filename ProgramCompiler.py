@@ -11,7 +11,7 @@ from shutil import rmtree
 client = commands.Bot(command_prefix = "!")
 
 ADMIN = [250989853158801419, 520334699046895617]
-listLang = ["python", "java", "c", "c++", "nodejs"]
+listLang = ["python", "java", "c", "c++", "c#", "nodejs"]
 
 @client.event
 async def on_ready():
