@@ -43,9 +43,12 @@ Alias : `!exercice`, `!exercise`, `!details`
 
 #### Afficher votre profil
 
-`!profil`
+`!profil [utilisateur]`
 
-Envoie les détails de votre profil (nom, image, score total, liste des exercices participés).
+Si `utilisateur` est spécifié, envoie ses détails (nom, image, score total, liste des exercices participés).
+S'il ne l'est pas, envoie votre profil.
+
+`utlisateur` peut être de la forme d'un Prénom-Nom (`!profil "Jean Pierre"`), d'un identifiant discord (`!profil 704416295914182878`), ou d'une mention (`!profil @JeanPierre#4242`).
 
 Alias: `!profile`, `!me`
 
