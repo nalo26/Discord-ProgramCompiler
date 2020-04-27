@@ -48,6 +48,8 @@ Aliases: `!exercice`, `!exercise`, `!details`
 If `user` is specified, send the user's profile detail (name, picture, total score, list of participate exercises).
 If not, send yours.
 
+`user` can be a FirstName-LastNane (`!profile "Jean Pierre"`), a discord ID (`!profile 704416295914182878`), or a tag (`!profile @JeanPierre#4242`).
+
 Aliases: `!profil`, `!me`
 
 #### Leaderboard
