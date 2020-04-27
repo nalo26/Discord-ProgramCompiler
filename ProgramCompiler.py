@@ -160,9 +160,28 @@ async def detail(ctx, title=""):
     await ctx.send(embed=show_ex(title, ex))
 
 @client.command(aliases=['profil', 'me'])
-async def profile(ctx):
+async def profile(ctx, user=None):
     dec = database.read("users.json")
-    u_disc = ctx.message.author
+
+    if user is None: u_disc = ctx.message.author
+    else:
+        if isinstance(user, str):
+            if user.startswith("<@!") and user.endswith(">"): user = user[3:][:-1]
+            try: user = int(user)
+            except ValueError:
+                for u, d in dec.items():
+                    if d['name'] == user:
+                        user = int(u)
+                        break
+                else:
+                    await ctx.send(f":x: Aucun participant du nom de `{user}` n'a été trouvé !")
+                    return
+        if isinstance(user, int):
+            u_disc = client.get_user(user)
+            if u_disc is None:
+                await ctx.send(f":x: Aucun participant avec l'id `{user}` n'a pas été trouvé !")
+                return
+            
     try: user = dec[str(u_disc.id)]
     except KeyError:
         try: username = client.get_guild(688355824934060032).get_member(u_disc.id).nick
