@@ -13,12 +13,12 @@ def add_submition(user_id, user_name, exer, lang, tests, complete, score):
     try: user = dec[str(user_id)]
     except KeyError: user = create_user(dec, user_name, user_id)
     try: ex = user['submit'][exer]
-    except KeyError: ex = {"best_score": 0, "complete": False}
+    except KeyError: ex = {"best_score": 0, "best_tests": 0, "complete": False}
     try: sub = ex[lang]
     except KeyError: sub = {'score': 0}
     ret = ""
     try:
-        if score <= sub['score'] and bool(ex['complete']): ret = f"Tu as déjà réussi cet exercice en `{'` ,`'.join([name.capitalize() for name, data in ex.items() if name not in ['best_score', 'complete'] and bool(data['complete'])])}` !"
+        if score <= sub['score'] and bool(ex['complete']): ret = f"Tu as déjà réussi cet exercice en `{'` ,`'.join([name.capitalize() for name, data in ex.items() if name not in ['best_score', 'best_tests', 'complete'] and bool(data['complete'])])}` !"
     except KeyError: pass
     
     if ret == "":
@@ -39,6 +39,7 @@ def add_submition(user_id, user_name, exer, lang, tests, complete, score):
             user['score']['general'] -= ex['best_score']
             user['score']['general'] += score
             ex['best_score'] = score
+            ex['best_tests'] = tests
             ret = f"C'est ton meilleur score sur cet exercice ({score} pts) !"
         else: ret = f"C'est ton meilleur score en `{lang.capitalize()}` ({score} pts) !"
         user['submit'][exer] = ex

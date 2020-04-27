@@ -3,8 +3,8 @@ import os
 
 import database
 
-language = {'.py': 'Python', '.java': 'Java', '.class': 'Java', '.c': 'C', '.js': 'NodeJS'}
-listLang = ["python", "java", "c", "nodejs"]
+language = {'.py': 'Python', '.java': 'Java', '.class': 'Java', '.c': 'C', '.cpp': 'C++', '.js': 'NodeJS'}
+listLang = ["python", "java", "c", "cpp", "nodejs"]
 
 async def compute(pathFile, filename, extension, exer_name, msg, author, username):
 
@@ -64,6 +64,21 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
             return
         bashCommand = f"./{filename}_c"
 
+    if extension == ".cpp":
+        try: os.remove(f"{pathFile}/{filename[:-4]}_cpp")
+        except FileNotFoundError: pass
+
+        bashCommand = f"g++ {filename} -o {filename[:-4]}_cpp -std=c++17 -O2 -I."
+        p = run(bashCommand, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
+        
+        filename = filename[:-4]
+        newFile = checkFile(pathFile, f"{filename}_cpp")
+        if newFile is None:
+            await msg.edit(content=f"`{exer_name}` ({exercice['difficulty']}:star:) [{language[extension]}]\n:x: **Erreur de compilation !** ```{p.stderr}```")
+            print("Compilation Error")
+            return
+        bashCommand = f"./{filename}_cpp"
+
     dec = database.read("exercices.json")
     ex_data = dec[exer_name]
     testAmount = ex_data['test_amount']
@@ -83,7 +98,7 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
     for i in range(1, testAmount+1):
 
         inp = open(f"{exer_name}/in_{i}.txt", "r").read()
-        process = run(f"sudo -u programcompiler timeout -v {timeout} {bashCommand}", input=inp, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
+        process = run(f'echo "{inp}" | sudo -u programcompiler timeout -v {timeout} {bashCommand}', stdout=PIPE, stderr=PIPE, check=False, cwd=pathFile, shell=True, universal_newlines=True)
         output = process.stdout
         error  = process.stderr
         if output == '': output = ' '

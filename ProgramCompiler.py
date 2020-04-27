@@ -11,7 +11,7 @@ from shutil import rmtree
 client = commands.Bot(command_prefix = "!")
 
 ADMIN = [250989853158801419, 520334699046895617]
-listLang = ["python", "java", "c", "nodejs"]
+listLang = ["python", "java", "c", "c++", "nodejs"]
 
 @client.event
 async def on_ready():
@@ -361,9 +361,10 @@ def show_user(u_disc, user):
         except KeyError: desc += f"▸ **{l.capitalize()}** : 0pts\n"
     embed.description = desc
     exercices = ""
-    for title, ex in user['submit'].items():
-        exercices += "▸ :white_check_mark:" if bool(ex['complete']) else "▸ :x:"
-        exercices += f" {title} ({dec[title]['difficulty']}:star:) **{user['submit'][title]['best_score']}pts**\n"
+    for title, data in user['submit'].items():
+        exo = dec[title]
+        exercices += "▸ :white_check_mark:" if bool(data['complete']) else "▸ :x:"
+        exercices += f" {title} ({exo['difficulty']}:star:) **{data['best_score']}pts** ({data['best_tests']}/{exo['test_amount']})\n"
     if exercices == "": exercices = "*Aucune participation n'a été trouvée !*"
 
     embed.add_field(name=f"Épreuves ({len(user['submit'])}/{len(dec)})", value=exercices)
