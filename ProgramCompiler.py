@@ -362,8 +362,8 @@ def show_user(u_disc, user):
     embed.description = desc
     exercices = ""
     for title, ex in user['submit'].items():
-        exercices += f"▸ {title} ({dec[title]['difficulty']}:star:) **{user['submit'][title]['best_score']}pts**"
-        exercices += " :white_check_mark:\n" if bool(ex['complete']) else " :x:\n"
+        exercices += "▸ :white_check_mark:" if bool(ex['complete']) else "▸ :x:"
+        exercices += f" {title} ({dec[title]['difficulty']}:star:) **{user['submit'][title]['best_score']}pts**\n"
     if exercices == "": exercices = "*Aucune participation n'a été trouvée !*"
 
     embed.add_field(name=f"Épreuves ({len(user['submit'])}/{len(dec)})", value=exercices)
