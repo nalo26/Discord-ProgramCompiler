@@ -2,7 +2,7 @@
 A bot to compile and execute program sending through discord.
 **This bot was created for a private challenge. You might edit it if you want to use it.**
 
-The bot only allows Python, Java, NodeJS and C languages. If you want more, request it to me!
+The bot only allows Python, Java, NodeJS, C and C++ languages. If you want more, request it to me!
 
 **The input is through __standard input__ (*stdin*), and not through args**!
 
