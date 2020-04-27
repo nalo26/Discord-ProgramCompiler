@@ -53,7 +53,7 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
         try: os.remove(f"{pathFile}/{filename[:-2]}_c")
         except FileNotFoundError: pass
 
-        bashCommand = f"gcc {filename} -o {filename[:-2]}_c -std=c11 -O2 -lm"
+        bashCommand = f"gcc {filename} -o {filename[:-2]}_c -std=c11 -O2 -lm -I."
         p = run(bashCommand, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
         
         filename = filename[:-2]
