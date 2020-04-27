@@ -43,9 +43,10 @@ Aliases: `!exercice`, `!exercise`, `!details`
 
 #### See your profile
 
-`!profile`
+`!profile [user]`
 
-Send your profile details (name, picture, total score, list of participate exercises).
+If `user` is specified, send the user's profile detail (name, picture, total score, list of participate exercises).
+If not, send yours.
 
 Aliases: `!profil`, `!me`
 
