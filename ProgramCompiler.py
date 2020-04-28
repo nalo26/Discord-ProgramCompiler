@@ -197,9 +197,11 @@ async def leaderboard(ctx, lang="all"):
     dec = database.read("users.json")
     res = {}
     for i, u in dec.items():
-        if lang.lower() == "all": res[u['name']] = u['score']['general']
+        if lang.lower() == "all":
+            if u['score']['general'] != 0: res[u['name']] = u['score']['general']
         else:
-            try: res[u['name']] = u['score'][lang.lower()]
+            try:
+                if u['score'][lang.lower()]: res[u['name']] = u['score'][lang.lower()]
             except KeyError: pass
     res = dict(sorted(res.items(), key=operator.itemgetter(1), reverse=True))
     emoji = {'1': ':first_place:', '2': ':second_place:', '3': ':third_place:'}
@@ -355,9 +357,12 @@ def show_user(u_disc, user):
     embed = discord.Embed(title=f"Profile de {user['name']}")
     embed.set_thumbnail(url=str(u_disc.avatar_url))
     desc = f":bar_chart: __Score total : **{user['score']['general']}pts**__\n"
+    nullAmout = 0
     for l in listLang:
         try: desc += f"▸ **{l.capitalize()}** : {user['score'][l]}pts\n"
-        except KeyError: desc += f"▸ **{l.capitalize()}** : 0pts\n"
+        # except KeyError: desc += f"▸ **{l.capitalize()}** : 0pts\n"
+        except KeyError: nullAmout += 1
+    desc += f"▸ *...{str(nullAmout)} autres sans participation*" if nullAmout != 0 else ""
     embed.description = desc
     exercices = ""
     for title, data in user['submit'].items():
