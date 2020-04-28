@@ -3,14 +3,14 @@ import os
 
 import database
 
-language = {'.py': 'Python', '.java': 'Java', '.class': 'Java', '.c': 'C', '.cpp': 'C++', '.cs': 'C#', '.js': 'NodeJS'}
-listLang = ["python", "java", "c", "cpp", "c#", "nodejs"]
+language = {'.py': 'Python', '.java': 'Java', '.class': 'Java', '.c': 'C', '.cpp': 'C++', '.cs': 'C#', '.js': 'NodeJS', '.rs': 'Rust', '.fs': 'F#'}
+listLang = ["python", "java", "c", "cpp", "c#", "nodejs", "rust", "f#"]
 
-async def compute(pathFile, filename, extension, exer_name, msg, author, username):
+async def compute(pathFile, filename, extension, exer_name, msg, author, username, isReal=True):
 
     exercice = database.read("exercices.json")[exer_name]
 
-    if not bool(exercice['enable']):
+    if not bool(exercice['enable']) and isReal:
         await msg.edit(content=f":x: **Cet exercice n'est pas/plus disponible !**")
         return
 
@@ -93,6 +93,36 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
             print("Compilation Error")
             return
         bashCommand = f"mono {filename}.exe"
+    
+    if extension == ".rs":
+        try: os.remove(f"{pathFile}/{filename[:-3]}_rs")
+        except FileNotFoundError: pass
+
+        bashCommand = f"rustc -o {filename}_rs -W warnings -O {filename}"
+        p = run(bashCommand, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
+        
+        filename = filename[:-3]
+        newFile = checkFile(pathFile, f"{filename}_rs")
+        if newFile is None:
+            await msg.edit(content=f"`{exer_name}` ({exercice['difficulty']}:star:) [{language[extension]}]\n:x: **Erreur de compilation !** ```{p.stderr}```")
+            print("Compilation Error")
+            return
+        bashCommand = f"./{filename}_rs"
+
+    if extension == ".fs":
+        try: os.remove(f"{pathFile}/{filename[:-3]}_fs")
+        except FileNotFoundError: pass
+
+        bashCommand = f"fsharpc -o {filename}_fs {filename}"
+        p = run(bashCommand, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
+        
+        filename = filename[:-3]
+        newFile = checkFile(pathFile, f"{filename}_fs")
+        if newFile is None:
+            await msg.edit(content=f"`{exer_name}` ({exercice['difficulty']}:star:) [{language[extension]}]\n:x: **Erreur de compilation !** ```{p.stderr}```")
+            print("Compilation Error")
+            return
+        bashCommand = f"./{filename}_fs"
 
     dec = database.read("exercices.json")
     ex_data = dec[exer_name]
@@ -106,7 +136,7 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
     pwd = open("PWD", 'r').read()
     
     print(f"Running {filename}..", end='')
-    await msg.edit(content=f"`{exer_name}` ({exercice['difficulty']}:star:) [{language[extension]}]\n:clock1: Exécution du programme en cours...")
+    await msg.edit(content=f"`{exer_name}` ({exercice['difficulty']}:star:) [{language[extension]}] {'***__UNRANKED__***' if not isReal else ''}\n:clock1: Exécution du programme en cours...")
     run(f"echo {pwd} | sudo -S -u programcompiler cat empty", check=False, shell=True) # connecting
 
     exercice_done = 0
@@ -118,7 +148,7 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
             output = process.stdout
             error  = process.stderr
             if output == '': output = ' '
-        except UnicodeDecodeError as e: error = e
+        except UnicodeDecodeError as e: error = str(e)
         neededOut = open(f"{exer_name}/out_{i}.txt", "r").read()
         
         if error != '': # on error
@@ -127,14 +157,14 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
                 if not ishidden: await msg.edit(content=f"{msg.content}\n`{i}/{testAmount}` :x: **Test échoué : votre programme a rencontré une erreur.**\nSortie standard attendue :```{neededOut[:-1]}```\nSortie standard du programme :```{output}```\nSortie d'erreur du programme :```{error}```")
                 else: await msg.edit(content=f"{msg.content}\n`{i}/{testAmount}` :x: **Test échoué : votre programme a rencontré une erreur.**\n*Sortie attendue masquée pour ce défi*\nSortie standard du programme :```{output}```\nSortie d'erreur du programme :```{error}```")
             print('. Failed!')
-            await msg.edit(content=f"{msg.content}\n{database.add_submition(author, username, exer_name, language[extension].lower(), exercice_done, False, exercice_done*difficulty)}")
+            if isReal: await msg.edit(content=f"{msg.content}\n{database.add_submition(author, username, exer_name, language[extension].lower(), exercice_done, False, exercice_done*difficulty)}")
             return
 
         if output != neededOut: # not good output
             if not ishidden: await msg.edit(content=f"{msg.content}\n`{i}/{testAmount}` :x: **Test échoué : votre programme s'est exécuté correctement, mais :**\nSortie standard attendue :```{neededOut[:-1]}```\nSortie standard du programme :```{output}```")
             else: await msg.edit(content=f"{msg.content}\n`{i}/{testAmount}` :x: **Test échoué : votre programme s'est exécuté correctement, mais :**\n*Sortie attendue masquée pour ce défi*\nSortie standard du programme :```{output}```")
             print('. Failed!')
-            await msg.edit(content=f"{msg.content}\n{database.add_submition(author, username, exer_name, language[extension].lower(), exercice_done, False, exercice_done*difficulty)}")
+            if isReal: await msg.edit(content=f"{msg.content}\n{database.add_submition(author, username, exer_name, language[extension].lower(), exercice_done, False, exercice_done*difficulty)}")
             return
             
         await msg.edit(content=f"{msg.content}\n`{i}/{testAmount}` :white_check_mark: **Test passé !**")
@@ -143,7 +173,7 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
     await msg.edit(content=f"{msg.content}\n\n:trophy: Bravo, tu as réussi cet exercice !")
     print('. Done!')
 
-    await msg.edit(content=f"{msg.content}\n{database.add_submition(author, username, exer_name, language[extension].lower(), exercice_done, True, exercice_done*difficulty)}")
+    if isReal: await msg.edit(content=f"{msg.content}\n{database.add_submition(author, username, exer_name, language[extension].lower(), exercice_done, True, exercice_done*difficulty)}")
     
 
 def checkFile(pathFile, name):

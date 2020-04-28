@@ -11,7 +11,7 @@ from shutil import rmtree
 client = commands.Bot(command_prefix = "!")
 
 ADMIN = [250989853158801419, 520334699046895617]
-listLang = ["python", "java", "c", "c++", "c#", "nodejs"]
+listLang = ["python", "java", "c", "c++", "c#", "nodejs", "rust", "f#"]
 
 @client.event
 async def on_ready():
@@ -184,8 +184,8 @@ async def profile(ctx, user=None):
             
     try: user = dec[str(u_disc.id)]
     except KeyError:
-        try: username = client.get_guild(688355824934060032).get_member(u_disc.id).nick
-        except Exception: username = client.get_user(u_disc.id).display_name
+        username = client.get_guild(688355824934060032).get_member(u_disc.id).nick
+        if username is None: username = client.get_user(u_disc.id).display_name
         user = database.create_user(dec, username, u_disc.id)
     await ctx.send(embed=show_user(u_disc, user))
 
@@ -197,11 +197,10 @@ async def leaderboard(ctx, lang="all"):
     dec = database.read("users.json")
     res = {}
     for i, u in dec.items():
-        if i != "520334699046895617":
-            if lang.lower() == "all": res[u['name']] = u['score']['general']
-            else:
-                try: res[u['name']] = u['score'][lang.lower()]
-                except KeyError: pass
+        if lang.lower() == "all": res[u['name']] = u['score']['general']
+        else:
+            try: res[u['name']] = u['score'][lang.lower()]
+            except KeyError: pass
     res = dict(sorted(res.items(), key=operator.itemgetter(1), reverse=True))
     emoji = {'1': ':first_place:', '2': ':second_place:', '3': ':third_place:'}
     last = -1
@@ -238,7 +237,7 @@ async def on_message(message):
     exercice = ".".join(filename.split('.')[:-1])
 
     dec = database.read("exercices.json")
-    try: dec[exercice]
+    try: exo = dec[exercice]
     except KeyError:
         await client.get_user(author).send(f":x: **Aucun exercice du nom de `{exercice}` n'a été trouvé !**")
         return
@@ -246,8 +245,8 @@ async def on_message(message):
     print("=====================================================================")
     try: os.mkdir(f"{exercice}/{author}")
     except FileExistsError: pass
-    try: username = client.get_guild(688355824934060032).get_member(author).nick
-    except Exception: username = client.get_user(author).display_name
+    username = client.get_guild(688355824934060032).get_member(author).nick
+    if username is None: username = client.get_user(author).display_name
 
     print(f"'{filename}' by {username}")
     path = f"{exercice}/{author}"
@@ -256,7 +255,7 @@ async def on_message(message):
 
     msg = await client.get_user(author).send(f"Téléchargement du programme {filename}...")
     
-    await compute(path, filename, extension, exercice, msg, author, username)
+    await compute(path, filename, extension, exercice, msg, author, username, not("test" in message.content.lower() or (not bool(exo['enable']) and is_admin(author))))
 
 def is_admin(u_id):
     return u_id in ADMIN
