@@ -2,7 +2,7 @@
 Un bot pour compiler et exécuter les programmes envoyés sur discord.
 **Ce bot a été créé pour un challenge privé. Si vous voulez l'utiliser, vous devrez certainement le modifier.**
 
-Ce bot n'accepte que les fichiers Python, Java, C et C++. Si vous voulez en ajouter, proposez-le moi !
+Ce bot accepte les fichiers Python, Java, NodeJS, C, C++, C#, F# and Rust. Si vous voulez en ajouter, proposez-le moi !
 
 **Les entrées sont données par __l'entré standard__ (*stdin*), et pas par arguments !**
 
@@ -19,6 +19,8 @@ NomDeLexercice.zip
 ```
 `NomDeLexercice` doit être le nom exact de l'exercice pour lequel vous participez.
 `.ext` est l'extension de votre fichier. Par exemple, si vous l'avez écrit en Java, `.ext` devra être `.java`
+
+Ajouter `test` enverra l'exercice sans être classé. Les points ne conteront pas dans le classement.
 
 Une fois que le test a été envoyé, il va être exécuté et testé avec les tests de l'exercice. Vous serez averti des erreurs, s'il y en a.
 
