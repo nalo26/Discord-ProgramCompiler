@@ -2,7 +2,7 @@
 A bot to compile and execute program sending through discord.
 **This bot was created for a private challenge. You might edit it if you want to use it.**
 
-The bot only allows Python, Java, NodeJS, C and C++ languages. If you want more, request it to me!
+The bot allows Python, Java, NodeJS, C, C++, C#, F# and Rust languages. If you want more, request it to me!
 
 **The input is through __standard input__ (*stdin*), and not through args**!
 
@@ -19,6 +19,8 @@ ExerciseName.zip
 ```
 `ExerciceName` is the exact name of the exercise you are submiting for.
 `.ext` is the extension of your file. For exemple, if you wrote it in Java, `.ext` should be `.java`
+
+Write `test` on the submit message to submit it as unranked. Points will not count.
 
 Once the test is submitted, it will be run and tested with the tests of the exercices. You will be warned of error(s) there are any.
 
