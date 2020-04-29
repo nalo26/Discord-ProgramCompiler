@@ -84,6 +84,9 @@ Elles fonctionnent de la même manière que les commandes shell, avec des argume
 |-T --timeout    |Temps maximum d'exécution (en secondes) de l'exercice|   10   |
 |-e --enable     |Si l'exercice est disponible ou non                  | true   |
 
+Les participants **ne peuvent pas** utiliser `-h` (true by default), `-l` (all), `-T` (10s) and `-e` (false).
+L'exercice sera soumit à un administrateur pour approbation.
+
 Alias : `!createTest`, `!createExercise`
 
 Exemple : `!create -t Addition -D "Calculez l'addition de deux nombres" -i "Deux nombres, un par ligne" -o "Le résultat de l'addition" -d 1 -h false -l Java -T 5`
@@ -116,6 +119,7 @@ Exemple: `!remove Addition`
 |-o --output |**Obligatoire** La sortie attendu par le programme |
 
 Pour entrer plusieurs lignes, séparez-les par `\n`.
+**Ni l'entrée ni la sortie ne doivent finir par un `\n` !!**
 
 Alias: `!addTest`
 
