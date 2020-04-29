@@ -26,9 +26,10 @@ async def on_ready():
 # ================== #
 @client.command(aliases=['createTest', 'createExercise'])
 async def create(ctx, *argv):
-    if not is_admin(ctx.message.author.id): return
+    # if not is_admin(ctx.message.author.id): return
     if not is_dm(ctx.channel): return
     title = ""
+    author = ctx.message.author
     description = ""
     inputs = ""
     output = ""
@@ -36,7 +37,7 @@ async def create(ctx, *argv):
     hidden = True
     language = "all"
     timeout = 10
-    enable = True
+    enable = is_admin(author)
     for i, arg in enumerate(argv):
         if len(argv)-1 >= i+1 and '-' not in argv[i+1]:
             if arg in ['-t', '--title']: title = argv[i+1]
@@ -44,10 +45,11 @@ async def create(ctx, *argv):
             if arg in ['-i', '--input']: inputs = argv[i+1]
             if arg in ['-o', '--output']: output = argv[i+1]
             if arg in ['-d', '--difficulty']: difficulty = int(argv[i+1])
-            if arg in ['-h', '--hidden']: hidden = bool(argv[i+1].lower() == 'true')
-            if arg in ['-l', '--language']: language = argv[i+1]
-            if arg in ['-T', '--timeout']: timeout = int(argv[i+1])
-            if arg in ['-e', '--enable']: enable = bool(argv[i+1].lower() == 'true')
+            if is_admin(author):
+                if arg in ['-h', '--hidden']: hidden = bool(argv[i+1].lower() == 'true')
+                if arg in ['-l', '--language']: language = argv[i+1]
+                if arg in ['-T', '--timeout']: timeout = int(argv[i+1])
+                if arg in ['-e', '--enable']: enable = bool(argv[i+1].lower() == 'true')
 
     if language != "all" and language.lower() not in listLang:
         await ctx.send(f":x: **Le langage `{language}` n'est pas (encore) supporté !**")
@@ -56,8 +58,9 @@ async def create(ctx, *argv):
         database.read("exercices.json")[title]
         await ctx.send(f":x: **Un défi du nom de `{title}` existe déjà ! **")
     except KeyError:
-        await ctx.send(embed=create_ex(title, difficulty, description, inputs, output, hidden, language.lower(), timeout, enable))
-        print(f"Exercise '{title}' ({difficulty}) [{language}] created by {ctx.message.author.name}")
+        await ctx.send(embed=create_ex(title, author.id, difficulty, description, inputs, output, hidden, language.lower(), timeout, enable))
+        if not is_admin(author): await client.get_user(ADMIN[1]).send(f"Nouvel exercice `{title}` proposé par `{database.read('users.json')[str(author.id)]['name']}` !", embed=show_ex(title, database.read("exercices.json")[title]))
+        print(f"Exercise '{title}' ({difficulty}) [{language}] created by {author.name}")
 
 @client.command()
 async def edit(ctx, *argv):
@@ -108,11 +111,12 @@ async def remove(ctx, title):
 
 @client.command(aliases=['addTest'])
 async def add(ctx, *argv):
-    if not is_admin(ctx.message.author.id): return
+    # if not is_admin(ctx.message.author.id): return
     if not is_dm(ctx.channel): return
     title = ""
     inputs = ""
     outputs = ""
+    author = ctx.message.author
     for i, arg in enumerate(argv):
         if len(argv)-1 >= i+1:
             if arg in ['-t', '--title']: title = argv[i+1]
@@ -120,12 +124,16 @@ async def add(ctx, *argv):
             if arg in ['-o', '--output', '--outputs']: outputs = argv[i+1]
 
     dec = database.read("exercices.json")
+    try: exo = dec[title]
+    except KeyError:
+        await ctx.send(f":x: **Aucun exercice du nom de `{title}` n'a été trouvé !**")
+        return
+    if exo['author'] == str(author.id) or author.id in ADMIN: add_test(title, inputs.replace('/n', '\n').replace("\\n", "\n"), outputs.replace('/n', '\n').replace("\\n", "\n"))
+    else:
+        ctx.send(":x: **Vous n'êtes pas l'auteur de cet exercice !**")
+        return
+    
     if title != "" and inputs != "" and outputs != "":
-        try: dec[title]
-        except KeyError:
-            await ctx.send(f":x: **Aucun exercice du nom de `{title}` n'a été trouvé !**")
-            return
-        add_test(title, inputs.replace('/n', '\n').replace("\\n", "\n"), outputs.replace('/n', '\n').replace("\\n", "\n"))
         await ctx.send(f":white_check_mark: **Test pour le défi `{title}` créé avec succès !**")
         print(f"Test added for '{title}' by {ctx.message.author.name}")
     else:
@@ -264,10 +272,10 @@ def is_admin(u_id):
 def is_dm(channel):
     return isinstance(channel, discord.DMChannel)
 
-def create_ex(title, difficulty, desc, inputs, output, hidden, language, timeout, enable):
+def create_ex(title, author, difficulty, desc, inputs, output, hidden, language, timeout, enable):
     os.mkdir(title)
     dec = database.read("exercices.json")
-    data = {'difficulty': difficulty, 'date': database.get_time(), 'description': desc, 'inputs': inputs, 'output': output, 'hidden': hidden, 'language': language, 'timeout': timeout, 'enable': enable, 'test_amount': 0, 'executed_test': 0}
+    data = {'difficulty': difficulty, 'date': database.get_time(), 'author': str(author), 'description': desc, 'inputs': inputs, 'output': output, 'hidden': hidden, 'language': language, 'timeout': timeout, 'enable': enable, 'test_amount': 0, 'executed_test': 0}
     dec[title] = data
     database.write("exercices.json", dec)
     return show_ex(title, data)
