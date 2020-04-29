@@ -1,5 +1,6 @@
 from subprocess import run, PIPE
 import os
+from shutil import rmtree
 
 import database
 
@@ -16,6 +17,7 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
 
     bashCommand = ''
     if extension == '.zip':
+        rmtree(f"{pathFile}/{filename[:-4]}", ignore_errors=True)
         bashCommand = f"unzip -o {filename} -d {filename[:-4]}" # -o Overwrite / -d Destination
         run(bashCommand, check=False, stdout=PIPE, cwd=pathFile, shell=True)
         print(f"Succesfully extracted {filename}")
@@ -53,7 +55,7 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
         try: os.remove(f"{pathFile}/{filename[:-2]}_c")
         except FileNotFoundError: pass
 
-        bashCommand = f"gcc {filename} -o {filename[:-2]}_c -std=c11 -O2 -lm -I."
+        bashCommand = f"gcc {filename} -o {filename[:-2]}_c -I."
         p = run(bashCommand, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
         
         filename = filename[:-2]
@@ -98,7 +100,7 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
         try: os.remove(f"{pathFile}/{filename[:-3]}_rs")
         except FileNotFoundError: pass
 
-        bashCommand = f"rustc -o {filename}_rs -W warnings -O {filename}"
+        bashCommand = f"rustc -o {filename[:-3]}_rs -W warnings -O {filename}"
         p = run(bashCommand, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
         
         filename = filename[:-3]
@@ -113,7 +115,7 @@ async def compute(pathFile, filename, extension, exer_name, msg, author, usernam
         try: os.remove(f"{pathFile}/{filename[:-3]}_fs")
         except FileNotFoundError: pass
 
-        bashCommand = f"fsharpc -o {filename}_fs {filename}"
+        bashCommand = f"fsharpc -o {filename[:-3]}_fs {filename}"
         p = run(bashCommand, stdout=PIPE, stderr=PIPE, check=False, encoding="utf-8", cwd=pathFile, shell=True)
         
         filename = filename[:-3]
