@@ -84,6 +84,9 @@ They work like shell commands, with arguments like `-a "This an argument"`.
 |-T --timeout    |The maximum execution duration (in seconds) of the exercice|   10  |
 |-e --enable     |If the exercice is available or not                        | true  |
 
+Users **can't** use `-h` (true by default), `-l` (all), `-T` (10s) and `-e` (false).
+Exercise will be submited to administrator for approval.
+
 Aliases : `!createTest`, `!createExercise`
 
 Example : `!create -t Addition -D "Calculate the addition of two number" -i "Two numbers, one per line" -o "The result of addition" -d 1 -h false -l Java -T 5 -e True`
@@ -116,6 +119,7 @@ Example: `!remove Addition`
 |-o --output |**Needed** The output sended to the program |
 
 To enter mutliple lines, add a `\n` character.
+**Neither input nor output should end by `\n` !!**
 
 Alias: `!addTest`
 
