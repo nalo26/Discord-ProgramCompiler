@@ -128,12 +128,12 @@ async def add(ctx, *argv):
     except KeyError:
         await ctx.send(f":x: **Aucun exercice du nom de `{title}` n'a été trouvé !**")
         return
-    if exo['author'] == str(author.id) or author.id in ADMIN: add_test(title, inputs.replace('/n', '\n').replace("\\n", "\n"), outputs.replace('/n', '\n').replace("\\n", "\n"))
-    else:
-        ctx.send(":x: **Vous n'êtes pas l'auteur de cet exercice !**")
-        return
     
     if title != "" and inputs != "" and outputs != "":
+        if exo['author'] == str(author.id) or author.id in ADMIN: add_test(title, inputs.replace('/n', '\n').replace("\\n", "\n"), outputs.replace('/n', '\n').replace("\\n", "\n"))
+        else:
+            ctx.send(":x: **Vous n'êtes pas l'auteur de cet exercice !**")
+            return
         await ctx.send(f":white_check_mark: **Test pour le défi `{title}` créé avec succès !**")
         print(f"Test added for '{title}' by {ctx.message.author.name}")
     else:
@@ -146,6 +146,24 @@ async def add(ctx, *argv):
         if inputs == "": await ctx.send(":x: **Veuillez préciser un __input__ à ce test !** (`-i`)")
         if outputs == "": await ctx.send(":x: **Veuillez préciser un __output__ à ce test !** (`-o`)")
     
+
+@client.command(aliases=[])
+async def see(ctx, title="", amount=0):
+    if not is_admin(ctx.message.author.id): return
+    if not is_dm(ctx.channel): return
+    if title == "" and amount == 0:
+        await ctx.send(":x: **Syntaxe : `!see <Titre> [Amount]`**")
+        return
+    dec = database.read("exercices.json")
+    try: exo = dec[title]
+    except KeyError:
+        await ctx.send(f":x: **Aucun exercice du nom de `{title}` n'a été trouvé !**")
+        return
+    
+    if amount == 0 or amount > exo['test_amount']: amount = exo['test_amount']
+
+    for i in range(1, amount+1):
+        await ctx.send(f"**-------------------- Test n°{i} --------------------**\n*Input :* ```{open(f'{title}/in_{i}.txt').read()}```\n*Output :* ```{open(f'{title}/out_{i}.txt').read()}```")
 
 
 # ================= #
