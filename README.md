@@ -124,3 +124,10 @@ To enter mutliple lines, add a `\n` character.
 Alias: `!addTest`
 
 Example: `!add -t Addition -i "1\n1" -o "2"`
+
+#### See the test entries of an existing exercise
+
+`!see <title> [amount]`
+
+If `amount` is specified, send the `amount` firsts test entries.
+If not, send all test entries.
