@@ -124,3 +124,10 @@ Pour entrer plusieurs lignes, séparez-les par `\n`.
 Alias: `!addTest`
 
 Exemple: `!add -t Addition -i "1\n1" -o "2"`
+
+#### Afficher les tests d'un exercice
+
+`!see <titre> [quantité]`
+
+Si `quantité` est spécifiée, envoie les `quantité` premiers tests de l'exercice.
+Sinon, envoie tous les tests de cet exercice.
