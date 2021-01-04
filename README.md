@@ -6,7 +6,7 @@ The bot allows Python, Java, NodeJS, C, C++, C#, F# and Rust languages. If you w
 
 **The input is through __standard input__ (*stdin*), and not through args**!
 
-## Submition
+## Submission
 
 To submit a test, send the file by private message to `ProgramCompiler#3290`.
 
